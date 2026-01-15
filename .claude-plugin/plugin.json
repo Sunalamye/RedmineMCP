@@ -1,0 +1,60 @@
+{
+  "name": "redmine-mcp",
+  "version": "1.0.0",
+  "description": "Redmine MCP Server with 34 API tools for issue tracking, time logging, wiki management, and more",
+  "author": {
+    "name": "soane"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/soane/redmine-mcp"
+  },
+  "keywords": [
+    "redmine",
+    "mcp",
+    "issue-tracking",
+    "project-management",
+    "claude-code"
+  ],
+  "mcpServers": {
+    "redmine": {
+      "command": "bun",
+      "args": ["run", "${pluginDir}/src/index.ts"],
+      "env": {
+        "REDMINE_URL": "${env:REDMINE_URL}",
+        "REDMINE_TOKEN": "${env:REDMINE_TOKEN}",
+        "LOG_LEVEL": "${env:LOG_LEVEL:info}"
+      }
+    }
+  },
+  "skills": [
+    {
+      "path": "skills/redmine",
+      "name": "redmine",
+      "description": "Redmine integration skill - URL parsing, issue query and management"
+    }
+  ],
+  "configuration": {
+    "required": [
+      {
+        "name": "REDMINE_URL",
+        "description": "Your Redmine instance URL (e.g., https://redmine.example.com)",
+        "type": "string"
+      },
+      {
+        "name": "REDMINE_TOKEN",
+        "description": "Your Redmine API token (found in My account > API access key)",
+        "type": "secret"
+      }
+    ],
+    "optional": [
+      {
+        "name": "LOG_LEVEL",
+        "description": "Logging level (debug/info/warn/error)",
+        "type": "string",
+        "default": "info"
+      }
+    ]
+  }
+}

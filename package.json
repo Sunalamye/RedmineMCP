@@ -1,14 +1,51 @@
 {
   "name": "redmine-mcp",
   "version": "1.0.0",
-  "description": "MCP Server for Redmine - Works with Claude Code and OpenCode",
+  "description": "MCP Server for Redmine with 34 API tools - Issue tracking, time logging, wiki management, and more",
   "type": "module",
   "main": "dist/index.js",
+  "bin": {
+    "redmine-mcp": "./dist/index.js"
+  },
   "scripts": {
     "start": "bun run src/index.ts",
     "dev": "bun --watch run src/index.ts",
-    "build": "bun build src/index.ts --outdir dist --target bun",
-    "typecheck": "tsc --noEmit"
+    "build": "bun build src/index.ts --outdir dist --target node",
+    "build:bun": "bun build src/index.ts --outdir dist --target bun",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist/",
+    "src/",
+    "skills/",
+    "README.md",
+    "LICENSE",
+    "llms-install.md"
+  ],
+  "keywords": [
+    "mcp",
+    "redmine",
+    "issue-tracking",
+    "project-management",
+    "time-tracking",
+    "claude-code",
+    "cline",
+    "model-context-protocol",
+    "ai-tools"
+  ],
+  "author": "soane",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soane/redmine-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/soane/redmine-mcp/issues"
+  },
+  "homepage": "https://github.com/soane/redmine-mcp#readme",
+  "engines": {
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"
