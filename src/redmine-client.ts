@@ -5,6 +5,44 @@
  * Refactored version: Using generic methods to reduce code duplication
  */
 
+import { log } from "./logger.js";
+
+// ============================================================================
+// Logging Helpers
+// ============================================================================
+
+/** Redact sensitive data from logs */
+function redact(obj: unknown): unknown {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj === "string") {
+    // Redact long hex strings (tokens, API keys)
+    return obj.replace(/([a-f0-9]{20,})/gi, "[REDACTED]");
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(redact);
+  }
+  if (typeof obj === "object") {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      // Redact known sensitive fields
+      if (/token|key|password|secret|credential/i.test(key)) {
+        result[key] = "[REDACTED]";
+      } else {
+        result[key] = redact(value);
+      }
+    }
+    return result;
+  }
+  return obj;
+}
+
+/** Truncate large response bodies for logging */
+function truncateForLog(data: unknown, maxLength = 2000): string {
+  const str = JSON.stringify(redact(data));
+  if (str.length <= maxLength) return str;
+  return str.substring(0, maxLength) + `... [truncated ${str.length - maxLength} chars]`;
+}
+
 // ============================================================================
 // Types & Interfaces
 // ============================================================================
@@ -117,18 +155,39 @@ export class RedmineClient {
 
   private async apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
     const url = `${this.config.baseUrl}${path}`;
+    const method = options.method || "GET";
     const headers = new Headers(options.headers);
     headers.set("X-Redmine-API-Key", this.config.apiKey);
     headers.set("Content-Type", "application/json");
     headers.set("User-Agent", "RedmineMCP/1.0");
-    return fetch(url, { ...options, headers });
+
+    // Log request
+    const startTime = Date.now();
+    log.debug(`[HTTP] ${method} ${url}`);
+    if (options.body) {
+      log.debug(`[HTTP] Request Body: ${truncateForLog(JSON.parse(options.body as string))}`);
+    }
+
+    const res = await fetch(url, { ...options, headers });
+    const elapsed = Date.now() - startTime;
+
+    // Log response status
+    log.debug(`[HTTP] Response ${res.status} ${res.statusText} (${elapsed}ms)`);
+
+    return res;
   }
 
   /** GET request - Auto error handling and JSON parsing */
   private async get<T>(path: string, errorMsg: string): Promise<T> {
     const res = await this.apiFetch(path);
-    if (!res.ok) throw new Error(`${errorMsg}: ${res.status}`);
-    return res.json();
+    if (!res.ok) {
+      const errorText = await res.text();
+      log.debug(`[HTTP] Error Body: ${errorText}`);
+      throw new Error(`${errorMsg}: ${res.status}`);
+    }
+    const data = await res.json();
+    log.debug(`[HTTP] Response Body: ${truncateForLog(data)}`);
+    return data;
   }
 
   /** GET request with query parameters */
@@ -145,10 +204,13 @@ export class RedmineClient {
       body: JSON.stringify(body),
     });
     if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`${errorMsg}: ${res.status} - ${text}`);
+      const errorText = await res.text();
+      log.debug(`[HTTP] Error Body: ${errorText}`);
+      throw new Error(`${errorMsg}: ${res.status} - ${errorText}`);
     }
-    return res.json();
+    const data = await res.json();
+    log.debug(`[HTTP] Response Body: ${truncateForLog(data)}`);
+    return data;
   }
 
   /** PUT/DELETE request - Returns success status only */
@@ -163,9 +225,11 @@ export class RedmineClient {
       body: body ? JSON.stringify(body) : undefined,
     });
     if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`${errorMsg}: ${res.status} - ${text}`);
+      const errorText = await res.text();
+      log.debug(`[HTTP] Error Body: ${errorText}`);
+      throw new Error(`${errorMsg}: ${res.status} - ${errorText}`);
     }
+    log.debug(`[HTTP] Response: success (no body)`);
     return { success: true };
   }
 
@@ -438,6 +502,9 @@ export class RedmineClient {
     if (description) queryParams.set("description", description);
 
     const url = `${this.config.baseUrl}/uploads.json?${queryParams.toString()}`;
+    const startTime = Date.now();
+    log.debug(`[HTTP] POST ${url} (file: ${filename}, size: ${content.byteLength} bytes)`);
+
     const res = await fetch(url, {
       method: "POST",
       headers: {
@@ -447,23 +514,42 @@ export class RedmineClient {
       body: content,
     });
 
+    const elapsed = Date.now() - startTime;
+    log.debug(`[HTTP] Response ${res.status} ${res.statusText} (${elapsed}ms)`);
+
     if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Failed to upload file: ${res.status} - ${text}`);
+      const errorText = await res.text();
+      log.debug(`[HTTP] Error Body: ${errorText}`);
+      throw new Error(`Failed to upload file: ${res.status} - ${errorText}`);
     }
-    return res.json();
+    const data = await res.json();
+    log.debug(`[HTTP] Response Body: ${truncateForLog(data)}`);
+    return data;
   }
 
   async downloadAttachment(attachmentId: number, savePath: string): Promise<{ saved_to: string; filename: string }> {
     const attachmentInfo = await this.getAttachment(attachmentId);
     const { content_url, filename } = attachmentInfo.attachment;
 
+    const startTime = Date.now();
+    log.debug(`[HTTP] GET ${content_url} (download attachment)`);
+
     const res = await fetch(content_url, {
       headers: { "X-Redmine-API-Key": this.config.apiKey },
     });
-    if (!res.ok) throw new Error(`Failed to download attachment: ${res.status}`);
 
-    await Bun.write(savePath, await res.arrayBuffer());
+    const elapsed = Date.now() - startTime;
+    log.debug(`[HTTP] Response ${res.status} ${res.statusText} (${elapsed}ms)`);
+
+    if (!res.ok) {
+      log.debug(`[HTTP] Download failed`);
+      throw new Error(`Failed to download attachment: ${res.status}`);
+    }
+
+    const content = await res.arrayBuffer();
+    log.debug(`[HTTP] Downloaded ${content.byteLength} bytes, saving to ${savePath}`);
+
+    await Bun.write(savePath, content);
     return { saved_to: savePath, filename };
   }
 

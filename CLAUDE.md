@@ -37,6 +37,21 @@ src/
 | `REDMINE_TOKEN` | Yes | API token |
 | `LOG_FILE` | No | Log file path (default: `/tmp/redmine-mcp.log`) |
 | `LOG_LEVEL` | No | debug/info/warn/error (default: info) |
+| `LOG_VIEWER` | No | Enable web log viewer (default: true) |
+| `LOG_VIEWER_PORT` | No | Log viewer port (default: 3456) |
+| `LOG_VIEWER_OPEN` | No | Auto open browser (default: true) |
+| `LOG_VIEWER_HISTORY` | No | Max log entries to keep (default: 500) |
+
+### Log Levels
+
+| Level | Records |
+|-------|---------|
+| `error` | Errors only |
+| `warn` | Warnings + errors |
+| `info` | Request/response summary + warnings + errors |
+| `debug` | **Full details**: HTTP requests, response bodies, all data (with sensitive redaction) |
+
+**Tip:** Use `LOG_LEVEL=debug` for troubleshooting to see complete HTTP traffic.
 
 ## Custom Commands
 

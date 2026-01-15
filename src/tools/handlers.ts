@@ -18,6 +18,40 @@ import {
   getLogViewerPort,
   isLogViewerRunning,
 } from "../log-viewer/server.js";
+
+// ============================================================================
+// Logging Helpers
+// ============================================================================
+
+/** Redact sensitive data from logs */
+function redact(obj: unknown): unknown {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj === "string") {
+    return obj.replace(/([a-f0-9]{20,})/gi, "[REDACTED]");
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(redact);
+  }
+  if (typeof obj === "object") {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      if (/token|key|password|secret|credential|api_key/i.test(key)) {
+        result[key] = "[REDACTED]";
+      } else {
+        result[key] = redact(value);
+      }
+    }
+    return result;
+  }
+  return obj;
+}
+
+/** Truncate large response for logging */
+function truncateForLog(data: unknown, maxLength = 2000): string {
+  const str = JSON.stringify(redact(data));
+  if (str.length <= maxLength) return str;
+  return str.substring(0, maxLength) + `... [truncated ${str.length - maxLength} chars]`;
+}
 import { type ToolName } from "./definitions.js";
 
 export interface ToolResult {
@@ -230,6 +264,7 @@ export function createToolHandler(redmineClient: RedmineClient) {
       const result = await handler(redmineClient, args);
       const elapsed = Date.now() - startTime;
       log.info(`[Response] ${name} success (${elapsed}ms)`);
+      log.debug(`[Response] ${name} body: ${truncateForLog(result)}`);
 
       return {
         content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
