@@ -1,17 +1,17 @@
 /**
  * Log Viewer WebSocket Server
  *
- * 環境變數:
- *   LOG_VIEWER - 啟用/停用 (預設: true)
- *   LOG_VIEWER_PORT - 伺服器端口 (預設: 3456)
- *   LOG_VIEWER_OPEN - 自動開啟瀏覽器 (預設: true)
- *   LOG_VIEWER_HISTORY - 保留最近 N 筆日誌 (預設: 500)
+ * Environment variables:
+ *   LOG_VIEWER - Enable/disable (default: true)
+ *   LOG_VIEWER_PORT - Server port (default: 3456)
+ *   LOG_VIEWER_OPEN - Auto open browser (default: true)
+ *   LOG_VIEWER_HISTORY - Keep last N log entries (default: 500)
  */
 
 import { logger, type LogEntry } from "../logger.js";
 import { LOG_VIEWER_HTML } from "./ui.js";
 
-// 配置
+// Configuration
 const CONFIG = {
   enabled: process.env.LOG_VIEWER !== "false",
   basePort: parseInt(process.env.LOG_VIEWER_PORT || "3456", 10),
@@ -20,11 +20,11 @@ const CONFIG = {
   maxPortRetries: 10,
 };
 
-// 運行時狀態
+// Runtime state
 let currentPort: number | null = null;
 let serverInstance: ReturnType<typeof Bun.serve> | null = null;
 
-// 日誌歷史 (環形緩衝區)
+// Log history (ring buffer)
 const logHistory: LogEntry[] = [];
 
 function addToHistory(entry: LogEntry): void {
@@ -34,7 +34,7 @@ function addToHistory(entry: LogEntry): void {
   }
 }
 
-// 脫敏處理 - 移除可能的 API token
+// Sanitization - remove potential API tokens
 function sanitize(entry: LogEntry): LogEntry {
   return {
     ...entry,
@@ -43,14 +43,14 @@ function sanitize(entry: LogEntry): LogEntry {
   };
 }
 
-// 驗證 Host header (防止 DNS rebinding 攻擊)
+// Validate Host header (prevent DNS rebinding attacks)
 function isValidHost(req: Request): boolean {
   const host = req.headers.get("host") || "";
   const hostname = host.split(":")[0];
   return ["127.0.0.1", "localhost"].includes(hostname);
 }
 
-// 嘗試在指定端口啟動伺服器
+// Try to start server on specified port
 function tryStartServer(port: number): ReturnType<typeof Bun.serve> | null {
   try {
     return Bun.serve({
@@ -64,14 +64,14 @@ function tryStartServer(port: number): ReturnType<typeof Bun.serve> | null {
 
         const url = new URL(req.url);
 
-        // WebSocket 升級
+        // WebSocket upgrade
         if (url.pathname === "/ws") {
           const upgraded = server.upgrade(req, { data: {} });
           if (upgraded) return undefined;
           return new Response("WebSocket upgrade failed", { status: 400 });
         }
 
-        // 主頁面
+        // Main page
         if (url.pathname === "/" || url.pathname === "/index.html") {
           return new Response(LOG_VIEWER_HTML, {
             headers: {
@@ -81,7 +81,7 @@ function tryStartServer(port: number): ReturnType<typeof Bun.serve> | null {
           });
         }
 
-        // API: 取得歷史日誌
+        // API: Get log history
         if (url.pathname === "/api/history") {
           return new Response(JSON.stringify(logHistory.map(sanitize)), {
             headers: {
@@ -91,7 +91,7 @@ function tryStartServer(port: number): ReturnType<typeof Bun.serve> | null {
           });
         }
 
-        // API: 取得伺服器資訊
+        // API: Get server info
         if (url.pathname === "/api/info") {
           return new Response(
             JSON.stringify({
@@ -130,30 +130,30 @@ function tryStartServer(port: number): ReturnType<typeof Bun.serve> | null {
   }
 }
 
-/** 取得 Log Viewer URL (如果已啟動) */
+/** Get Log Viewer URL (if running) */
 export function getLogViewerUrl(): string | null {
   if (!currentPort) return null;
   return `http://localhost:${currentPort}`;
 }
 
-/** 取得 Log Viewer 端口 (如果已啟動) */
+/** Get Log Viewer port (if running) */
 export function getLogViewerPort(): number | null {
   return currentPort;
 }
 
-/** 檢查 Log Viewer 是否正在運行 */
+/** Check if Log Viewer is running */
 export function isLogViewerRunning(): boolean {
   return serverInstance !== null;
 }
 
-/** 啟動 Log Viewer */
+/** Start Log Viewer */
 export function startLogViewer(): void {
   if (!CONFIG.enabled) {
-    console.error("[LOG-VIEWER] 已停用 (LOG_VIEWER=false)");
+    console.error("[LOG-VIEWER] Disabled (LOG_VIEWER=false)");
     return;
   }
 
-  // 嘗試多個端口
+  // Try multiple ports
   for (let i = 0; i < CONFIG.maxPortRetries; i++) {
     const port = CONFIG.basePort + i;
     const server = tryStartServer(port);
@@ -162,16 +162,16 @@ export function startLogViewer(): void {
       serverInstance = server;
       currentPort = port;
 
-      // 訂閱 Logger 事件
+      // Subscribe to Logger events
       logger.on("log", (entry: LogEntry) => {
         addToHistory(entry);
         server.publish("logs", JSON.stringify(sanitize(entry)));
       });
 
       const url = getLogViewerUrl()!;
-      console.error(`[LOG-VIEWER] 運行於 ${url}`);
+      console.error(`[LOG-VIEWER] Running at ${url}`);
 
-      // 自動開啟瀏覽器
+      // Auto open browser
       if (CONFIG.autoOpen) {
         const cmd =
           process.platform === "darwin"
@@ -188,6 +188,6 @@ export function startLogViewer(): void {
   }
 
   console.error(
-    `[LOG-VIEWER] 啟動失敗: 端口 ${CONFIG.basePort}-${CONFIG.basePort + CONFIG.maxPortRetries - 1} 都被佔用`
+    `[LOG-VIEWER] Failed to start: ports ${CONFIG.basePort}-${CONFIG.basePort + CONFIG.maxPortRetries - 1} are all in use`
   );
 }

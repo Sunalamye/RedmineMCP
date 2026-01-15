@@ -1,5 +1,5 @@
 /**
- * MCP Tools 定義
+ * MCP Tools Definitions
  */
 
 export interface ToolDefinition {
@@ -12,13 +12,13 @@ export interface ToolDefinition {
   };
 }
 
-const TOOL_HINT = "（用 /redmine 查看詳細說明）";
+const TOOL_HINT = "(use /redmine for details)";
 
 export const TOOLS: ToolDefinition[] = [
   // Issues
   {
     name: "redmine_get_issues",
-    description: `Issues 列表 ${TOOL_HINT}`,
+    description: `List issues ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: {
@@ -34,7 +34,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "redmine_get_issue",
-    description: `Issue 詳情 ${TOOL_HINT}`,
+    description: `Get issue details ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: { id: { type: "number" } },
@@ -43,7 +43,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "redmine_update_issue",
-    description: `更新 Issue ${TOOL_HINT}`,
+    description: `Update issue ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: {
@@ -59,7 +59,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "redmine_get_journals",
-    description: `Issue 歷史 ${TOOL_HINT}`,
+    description: `Get issue history ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: { issue_id: { type: "number" } },
@@ -70,12 +70,12 @@ export const TOOLS: ToolDefinition[] = [
   // Projects & Users
   {
     name: "redmine_get_projects",
-    description: `專案列表 ${TOOL_HINT}`,
+    description: `List projects ${TOOL_HINT}`,
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "redmine_get_project_members",
-    description: `專案成員 ${TOOL_HINT}`,
+    description: `Get project members ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: { project_id: { type: "string" } },
@@ -84,12 +84,12 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "redmine_get_current_user",
-    description: `當前使用者 ${TOOL_HINT}`,
+    description: `Get current user ${TOOL_HINT}`,
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "redmine_get_users",
-    description: `使用者列表 ${TOOL_HINT}`,
+    description: `List users ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: {
@@ -103,7 +103,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "redmine_get_user",
-    description: `使用者詳情 ${TOOL_HINT}`,
+    description: `Get user details ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: { id: { type: "number" } },
@@ -114,24 +114,24 @@ export const TOOLS: ToolDefinition[] = [
   // Trackers & Statuses
   {
     name: "redmine_get_trackers",
-    description: `追蹤標籤 ${TOOL_HINT}`,
+    description: `List trackers ${TOOL_HINT}`,
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "redmine_get_statuses",
-    description: `狀態列表 ${TOOL_HINT}`,
+    description: `List statuses ${TOOL_HINT}`,
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "redmine_get_priorities",
-    description: `優先權 ${TOOL_HINT}`,
+    description: `List priorities ${TOOL_HINT}`,
     inputSchema: { type: "object", properties: {} },
   },
 
   // Time Entries
   {
     name: "redmine_get_time_entries",
-    description: `工時列表 ${TOOL_HINT}`,
+    description: `List time entries ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: {
@@ -146,7 +146,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "redmine_create_time_entry",
-    description: `建立工時 ${TOOL_HINT}`,
+    description: `Create time entry ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: {
@@ -162,14 +162,14 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "redmine_get_time_entry_activities",
-    description: `活動類型 ${TOOL_HINT}`,
+    description: `List activity types ${TOOL_HINT}`,
     inputSchema: { type: "object", properties: {} },
   },
 
   // Versions
   {
     name: "redmine_get_versions",
-    description: `版本列表 ${TOOL_HINT}`,
+    description: `List versions ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: { project_id: { type: "string" } },
@@ -178,7 +178,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "redmine_get_version",
-    description: `版本詳情 ${TOOL_HINT}`,
+    description: `Get version details ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: { id: { type: "number" } },
@@ -189,7 +189,7 @@ export const TOOLS: ToolDefinition[] = [
   // Issue Relations
   {
     name: "redmine_get_issue_relations",
-    description: `Issue 關聯 ${TOOL_HINT}`,
+    description: `Get issue relations ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: { issue_id: { type: "number" } },
@@ -198,7 +198,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "redmine_create_issue_relation",
-    description: `建立關聯 ${TOOL_HINT}`,
+    description: `Create relation ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: {
@@ -212,7 +212,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "redmine_delete_issue_relation",
-    description: `刪除關聯 ${TOOL_HINT}`,
+    description: `Delete relation ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: { relation_id: { type: "number" } },
@@ -223,7 +223,7 @@ export const TOOLS: ToolDefinition[] = [
   // Issue Categories
   {
     name: "redmine_get_issue_categories",
-    description: `Issue 分類 ${TOOL_HINT}`,
+    description: `Get issue categories ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: { project_id: { type: "string" } },
@@ -234,7 +234,7 @@ export const TOOLS: ToolDefinition[] = [
   // Wiki
   {
     name: "redmine_get_wiki_pages",
-    description: `Wiki 列表 ${TOOL_HINT}`,
+    description: `List wiki pages ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: { project_id: { type: "string" } },
@@ -243,7 +243,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "redmine_get_wiki_page",
-    description: `Wiki 內容 ${TOOL_HINT}`,
+    description: `Get wiki page content ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: {
@@ -255,7 +255,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "redmine_update_wiki_page",
-    description: `更新 Wiki ${TOOL_HINT}`,
+    description: `Update wiki page ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: {
@@ -271,7 +271,7 @@ export const TOOLS: ToolDefinition[] = [
   // Files & Attachments
   {
     name: "redmine_get_files",
-    description: `專案檔案 ${TOOL_HINT}`,
+    description: `Get project files ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: { project_id: { type: "string" } },
@@ -280,7 +280,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "redmine_get_attachment",
-    description: `附件資訊 ${TOOL_HINT}`,
+    description: `Get attachment info ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: { id: { type: "number" } },
@@ -289,7 +289,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "redmine_upload",
-    description: `上傳檔案 ${TOOL_HINT}`,
+    description: `Upload file ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: {
@@ -301,7 +301,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "redmine_download",
-    description: `下載附件 ${TOOL_HINT}`,
+    description: `Download attachment ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: {
@@ -315,7 +315,7 @@ export const TOOLS: ToolDefinition[] = [
   // Search
   {
     name: "redmine_search",
-    description: `全文搜尋 ${TOOL_HINT}`,
+    description: `Full-text search ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: {
@@ -332,22 +332,22 @@ export const TOOLS: ToolDefinition[] = [
   // Others
   {
     name: "redmine_get_queries",
-    description: `已存查詢 ${TOOL_HINT}`,
+    description: `List saved queries ${TOOL_HINT}`,
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "redmine_get_roles",
-    description: `角色列表 ${TOOL_HINT}`,
+    description: `List roles ${TOOL_HINT}`,
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "redmine_get_groups",
-    description: `群組列表 ${TOOL_HINT}`,
+    description: `List groups ${TOOL_HINT}`,
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "redmine_get_news",
-    description: `新聞列表 ${TOOL_HINT}`,
+    description: `List news ${TOOL_HINT}`,
     inputSchema: {
       type: "object",
       properties: { project_id: { type: "string" } },
@@ -357,7 +357,7 @@ export const TOOLS: ToolDefinition[] = [
   // Log Viewer
   {
     name: "redmine_log_viewer",
-    description: "取得 Log Viewer 網址並可選擇開啟瀏覽器 (open=true 開啟瀏覽器) [MCP內部工具]",
+    description: "Get Log Viewer URL and optionally open browser (open=true opens browser) [MCP internal tool]",
     inputSchema: {
       type: "object",
       properties: {

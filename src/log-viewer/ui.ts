@@ -1,9 +1,9 @@
 /**
- * Log Viewer UI - 單檔 HTML+CSS+JS
+ * Log Viewer UI - Single file HTML+CSS+JS
  */
 
 export const LOG_VIEWER_HTML = `<!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -137,12 +137,15 @@ export const LOG_VIEWER_HTML = `<!DOCTYPE html>
 
     .log-duration {
       color: #34d399;
-      min-width: 60px;
+      min-width: 70px;
+      width: 70px;
       text-align: right;
+      font-variant-numeric: tabular-nums;
     }
 
     .log-duration.slow { color: #fbbf24; }
     .log-duration.very-slow { color: #f87171; }
+    .log-duration.empty { color: #444; }
 
     .log-message {
       flex: 1;
@@ -195,19 +198,19 @@ export const LOG_VIEWER_HTML = `<!DOCTYPE html>
 </head>
 <body>
   <header class="header">
-    <h1>🔍 RedmineMCP Log Viewer</h1>
+    <h1>RedmineMCP Log Viewer</h1>
     <div class="header-actions">
-      <button class="btn" id="pauseBtn">⏸ 暫停</button>
-      <button class="btn" id="clearBtn">🗑 清除</button>
-      <button class="btn" id="exportBtn">📥 匯出</button>
+      <button class="btn" id="pauseBtn">Pause</button>
+      <button class="btn" id="clearBtn">Clear</button>
+      <button class="btn" id="exportBtn">Export</button>
     </div>
   </header>
 
   <div class="toolbar">
     <div>
-      <label>級別: </label>
+      <label>Level: </label>
       <select id="levelFilter">
-        <option value="all">全部</option>
+        <option value="all">All</option>
         <option value="debug">DEBUG</option>
         <option value="info">INFO</option>
         <option value="warn">WARN</option>
@@ -215,35 +218,35 @@ export const LOG_VIEWER_HTML = `<!DOCTYPE html>
       </select>
     </div>
     <div>
-      <label>工具: </label>
+      <label>Tool: </label>
       <select id="toolFilter">
-        <option value="all">全部</option>
+        <option value="all">All</option>
       </select>
     </div>
     <div>
-      <label>搜尋: </label>
-      <input type="text" id="searchInput" placeholder="輸入關鍵字...">
+      <label>Search: </label>
+      <input type="text" id="searchInput" placeholder="Enter keyword...">
     </div>
     <div>
       <label>
-        <input type="checkbox" id="autoScroll" checked> 自動捲動
+        <input type="checkbox" id="autoScroll" checked> Auto scroll
       </label>
     </div>
   </div>
 
   <div class="log-container" id="logContainer">
     <div class="empty-state" id="emptyState">
-      <h2>等待日誌...</h2>
-      <p>當 MCP 工具被調用時，日誌將顯示在這裡</p>
+      <h2>Waiting for logs...</h2>
+      <p>Logs will appear here when MCP tools are invoked</p>
     </div>
   </div>
 
   <div class="status-bar">
     <div class="status-indicator">
       <span class="status-dot" id="statusDot"></span>
-      <span id="statusText">連線中...</span>
+      <span id="statusText">Connecting...</span>
     </div>
-    <div id="entryCount">0 筆記錄</div>
+    <div id="entryCount">0 entries</div>
     <div id="lastUpdate">-</div>
   </div>
 
@@ -276,13 +279,15 @@ export const LOG_VIEWER_HTML = `<!DOCTYPE html>
     // Format time
     function formatTime(timestamp) {
       const date = new Date(timestamp);
-      return date.toLocaleTimeString('zh-TW', { hour12: false }) +
+      return date.toLocaleTimeString('en-US', { hour12: false }) +
              '.' + String(date.getMilliseconds()).padStart(3, '0');
     }
 
     // Format duration
     function formatDuration(ms) {
-      if (ms === undefined) return '';
+      if (ms === undefined || ms === null) {
+        return '<span class="log-duration empty">-</span>';
+      }
       let cls = '';
       if (ms > 500) cls = 'slow';
       if (ms > 1000) cls = 'very-slow';
@@ -343,8 +348,8 @@ export const LOG_VIEWER_HTML = `<!DOCTYPE html>
       }
 
       // Update status
-      entryCount.textContent = state.logs.length + ' 筆記錄';
-      lastUpdate.textContent = '最後更新: ' + formatTime(log.timestamp);
+      entryCount.textContent = state.logs.length + ' entries';
+      lastUpdate.textContent = 'Last: ' + formatTime(log.timestamp);
     }
 
     // Apply filters to entry
@@ -365,7 +370,7 @@ export const LOG_VIEWER_HTML = `<!DOCTYPE html>
     // Update tool filter dropdown
     function updateToolFilter() {
       const current = toolFilter.value;
-      toolFilter.innerHTML = '<option value="all">全部</option>';
+      toolFilter.innerHTML = '<option value="all">All</option>';
       Array.from(state.tools).sort().forEach(tool => {
         const option = document.createElement('option');
         option.value = tool;
@@ -394,7 +399,7 @@ export const LOG_VIEWER_HTML = `<!DOCTYPE html>
       ws.onopen = () => {
         state.connected = true;
         statusDot.classList.add('connected');
-        statusText.textContent = '已連線';
+        statusText.textContent = 'Connected';
       };
 
       ws.onmessage = (e) => {
@@ -409,7 +414,7 @@ export const LOG_VIEWER_HTML = `<!DOCTYPE html>
       ws.onclose = () => {
         state.connected = false;
         statusDot.classList.remove('connected');
-        statusText.textContent = '已斷線，重新連線中...';
+        statusText.textContent = 'Disconnected, reconnecting...';
         setTimeout(connect, 2000);
       };
 
@@ -421,7 +426,7 @@ export const LOG_VIEWER_HTML = `<!DOCTYPE html>
     // Event listeners
     pauseBtn.addEventListener('click', () => {
       state.paused = !state.paused;
-      pauseBtn.textContent = state.paused ? '▶ 繼續' : '⏸ 暫停';
+      pauseBtn.textContent = state.paused ? 'Resume' : 'Pause';
       pauseBtn.classList.toggle('active', state.paused);
     });
 
@@ -432,7 +437,7 @@ export const LOG_VIEWER_HTML = `<!DOCTYPE html>
       emptyState.style.display = 'block';
       logContainer.appendChild(emptyState);
       updateToolFilter();
-      entryCount.textContent = '0 筆記錄';
+      entryCount.textContent = '0 entries';
     });
 
     document.getElementById('exportBtn').addEventListener('click', exportLogs);

@@ -1,9 +1,9 @@
 /**
- * Logger 模組 - Singleton Pattern + EventEmitter
+ * Logger Module - Singleton Pattern + EventEmitter
  *
- * 環境變數:
- *   LOG_FILE - 日誌輸出檔案路徑 (預設: /tmp/redmine-mcp.log)
- *   LOG_LEVEL - 日誌等級: debug, info, warn, error (預設: info)
+ * Environment variables:
+ *   LOG_FILE - Log output file path (default: /tmp/redmine-mcp.log)
+ *   LOG_LEVEL - Log level: debug, info, warn, error (default: info)
  */
 
 import * as fs from "fs";
@@ -56,35 +56,35 @@ class Logger extends EventEmitter {
     const levelTag = level.toUpperCase().padEnd(5);
     const raw = `[${timestamp}] [${levelTag}] ${msg}`;
 
-    // 寫入檔案
+    // Write to file
     fs.appendFileSync(this.logFile, raw + "\n");
     console.error(`[${levelTag}] ${msg}`);
 
-    // 解析工具名稱和執行時間
+    // Parse tool name and execution time
     const entry = this.parseLogEntry(timestamp, level, msg, raw);
 
-    // 發送事件給 WebSocket 訂閱者
+    // Emit event to WebSocket subscribers
     this.emit("log", entry);
   }
 
   private parseLogEntry(timestamp: string, level: LogLevel, msg: string, raw: string): LogEntry {
     const entry: LogEntry = { timestamp, level, message: msg, raw };
 
-    // 解析 [請求] tool_name {...}
-    const requestMatch = msg.match(/^\[請求\]\s+(\w+)/);
+    // Parse [Request] tool_name {...}
+    const requestMatch = msg.match(/^\[Request\]\s+(\w+)/);
     if (requestMatch) {
       entry.tool = requestMatch[1];
     }
 
-    // 解析 [回應] tool_name 成功 (123ms)
-    const responseMatch = msg.match(/^\[回應\]\s+(\w+)\s+成功\s+\((\d+)ms\)/);
+    // Parse [Response] tool_name success (123ms)
+    const responseMatch = msg.match(/^\[Response\]\s+(\w+)\s+success\s+\((\d+)ms\)/);
     if (responseMatch) {
       entry.tool = responseMatch[1];
       entry.duration_ms = parseInt(responseMatch[2], 10);
     }
 
-    // 解析 [錯誤] tool_name 失敗: ... (123ms)
-    const errorMatch = msg.match(/^\[錯誤\]\s+(\w+)\s+失敗:.*\((\d+)ms\)/);
+    // Parse [Error] tool_name failed: ... (123ms)
+    const errorMatch = msg.match(/^\[Error\]\s+(\w+)\s+failed:.*\((\d+)ms\)/);
     if (errorMatch) {
       entry.tool = errorMatch[1];
       entry.duration_ms = parseInt(errorMatch[2], 10);
@@ -109,12 +109,12 @@ class Logger extends EventEmitter {
     this.write("error", msg);
   }
 
-  /** 取得目前日誌檔案路徑 */
+  /** Get current log file path */
   getLogFile(): string {
     return this.logFile;
   }
 
-  /** 取得目前日誌等級 */
+  /** Get current log level */
   getLogLevel(): LogLevel {
     return this.logLevel;
   }

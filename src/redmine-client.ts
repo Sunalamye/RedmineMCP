@@ -1,8 +1,8 @@
 /**
  * Redmine API Client
- * 使用 API Key 認證
+ * Using API Key authentication
  *
- * 重構版本：使用通用方法減少重複程式碼
+ * Refactored version: Using generic methods to reduce code duplication
  */
 
 // ============================================================================
@@ -112,7 +112,7 @@ export class RedmineClient {
   }
 
   // ==========================================================================
-  // Core API Methods (減少重複的關鍵)
+  // Core API Methods (Key to reducing duplication)
   // ==========================================================================
 
   private async apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
@@ -124,21 +124,21 @@ export class RedmineClient {
     return fetch(url, { ...options, headers });
   }
 
-  /** GET 請求 - 自動處理錯誤和 JSON 解析 */
+  /** GET request - Auto error handling and JSON parsing */
   private async get<T>(path: string, errorMsg: string): Promise<T> {
     const res = await this.apiFetch(path);
     if (!res.ok) throw new Error(`${errorMsg}: ${res.status}`);
     return res.json();
   }
 
-  /** GET 請求帶 Query 參數 */
+  /** GET request with query parameters */
   private async getWithQuery<T>(basePath: string, params: object, errorMsg: string): Promise<T> {
     const query = this.buildQueryString(params);
     const path = query ? `${basePath}?${query}` : basePath;
     return this.get<T>(path, errorMsg);
   }
 
-  /** POST 請求 - 返回創建的資源 */
+  /** POST request - Returns created resource */
   private async post<T>(path: string, body: object, errorMsg: string): Promise<T> {
     const res = await this.apiFetch(path, {
       method: "POST",
@@ -151,7 +151,7 @@ export class RedmineClient {
     return res.json();
   }
 
-  /** PUT/DELETE 請求 - 只返回成功狀態 */
+  /** PUT/DELETE request - Returns success status only */
   private async mutate(
     path: string,
     method: "PUT" | "DELETE",
@@ -186,10 +186,10 @@ export class RedmineClient {
   async login(): Promise<boolean> {
     try {
       const res = await this.apiFetch("/users/current.json");
-      console.error(res.ok ? "[RedmineClient] 認證驗證成功" : `[RedmineClient] 認證失敗: ${res.status}`);
+      console.error(res.ok ? "[RedmineClient] Authentication successful" : `[RedmineClient] Authentication failed: ${res.status}`);
       return res.ok;
     } catch (error) {
-      console.error("[RedmineClient] 認證錯誤:", error);
+      console.error("[RedmineClient] Authentication error:", error);
       return false;
     }
   }

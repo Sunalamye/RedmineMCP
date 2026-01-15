@@ -1,6 +1,6 @@
 /**
  * MCP Tool Handlers
- * 使用 Handler Map 模式取代 switch statement
+ * Using Handler Map pattern instead of switch statement
  */
 
 import {
@@ -35,19 +35,19 @@ type Handler = (client: RedmineClient, args: Args) => Promise<unknown>;
 
 function requireId(args: Args): number {
   const id = args?.id as number;
-  if (!id) throw new Error("缺少必要參數: id");
+  if (!id) throw new Error("Missing required parameter: id");
   return id;
 }
 
 function requireIssueId(args: Args): number {
   const issueId = args?.issue_id as number;
-  if (!issueId) throw new Error("缺少必要參數: issue_id");
+  if (!issueId) throw new Error("Missing required parameter: issue_id");
   return issueId;
 }
 
 function requireProjectId(args: Args): string {
   const projectId = args?.project_id as string;
-  if (!projectId) throw new Error("缺少必要參數: project_id");
+  if (!projectId) throw new Error("Missing required parameter: project_id");
   return projectId;
 }
 
@@ -99,7 +99,7 @@ const handlers: Record<string, Handler> = {
 
   redmine_delete_issue_relation: (client, args) => {
     const relationId = args?.relation_id as number;
-    if (!relationId) throw new Error("缺少必要參數: relation_id");
+    if (!relationId) throw new Error("Missing required parameter: relation_id");
     return client.deleteIssueRelation(relationId);
   },
 
@@ -164,14 +164,14 @@ const handlers: Record<string, Handler> = {
   redmine_get_wiki_page: (client, args) => {
     const projectId = requireProjectId(args);
     const title = args?.title as string;
-    if (!title) throw new Error("缺少必要參數: title");
+    if (!title) throw new Error("Missing required parameter: title");
     return client.getWikiPage(projectId, title);
   },
 
   redmine_update_wiki_page: (client, args) => {
     const projectId = requireProjectId(args);
     const title = args?.title as string;
-    if (!title) throw new Error("缺少必要參數: title");
+    if (!title) throw new Error("Missing required parameter: title");
     const params: WikiPageParams = {
       text: args?.text as string,
       comments: args?.comments as string | undefined,
@@ -185,22 +185,22 @@ const handlers: Record<string, Handler> = {
 
   redmine_upload: (client, args) => {
     const filePath = args?.file_path as string;
-    if (!filePath) throw new Error("缺少必要參數: file_path");
+    if (!filePath) throw new Error("Missing required parameter: file_path");
     return client.uploadFile(filePath, args?.description as string | undefined);
   },
 
   redmine_download: (client, args) => {
     const attachmentId = args?.attachment_id as number;
     const savePath = args?.save_path as string;
-    if (!attachmentId) throw new Error("缺少必要參數: attachment_id");
-    if (!savePath) throw new Error("缺少必要參數: save_path");
+    if (!attachmentId) throw new Error("Missing required parameter: attachment_id");
+    if (!savePath) throw new Error("Missing required parameter: save_path");
     return client.downloadAttachment(attachmentId, savePath);
   },
 
   // Search
   redmine_search: (client, args) => {
     const query = args?.q as string;
-    if (!query) throw new Error("缺少必要參數: q");
+    if (!query) throw new Error("Missing required parameter: q");
     const params: SearchParams = {
       scope: args?.scope as string | undefined,
       project_id: args?.project_id as string | undefined,
@@ -213,7 +213,7 @@ const handlers: Record<string, Handler> = {
   // News
   redmine_get_news: (client, args) => client.getNews(args?.project_id as string | undefined),
 
-  // Log Viewer (不需要 client)
+  // Log Viewer (client not required)
   redmine_log_viewer: async (_client, args) => {
     const running = isLogViewerRunning();
     const url = getLogViewerUrl();
@@ -222,11 +222,11 @@ const handlers: Record<string, Handler> = {
     if (!running || !url) {
       return {
         running: false,
-        message: "Log Viewer 未啟動，請設定 LOG_VIEWER=true",
+        message: "Log Viewer not running, set LOG_VIEWER=true to enable",
       };
     }
 
-    // 可選：開啟瀏覽器
+    // Optional: open browser
     if (args?.open === true) {
       const cmd =
         process.platform === "darwin"
@@ -241,7 +241,7 @@ const handlers: Record<string, Handler> = {
       running: true,
       url,
       port,
-      message: args?.open ? "已開啟瀏覽器" : "Log Viewer 運行中",
+      message: args?.open ? "Browser opened" : "Log Viewer running",
     };
   },
 };
@@ -253,15 +253,15 @@ const handlers: Record<string, Handler> = {
 export function createToolHandler(redmineClient: RedmineClient) {
   return async (name: string, args: Args): Promise<ToolResult> => {
     const startTime = Date.now();
-    log.info(`[請求] ${name} ${args ? JSON.stringify(args) : ""}`);
+    log.info(`[Request] ${name} ${args ? JSON.stringify(args) : ""}`);
 
     try {
       const handler = handlers[name];
-      if (!handler) throw new Error(`未知的工具: ${name}`);
+      if (!handler) throw new Error(`Unknown tool: ${name}`);
 
       const result = await handler(redmineClient, args);
       const elapsed = Date.now() - startTime;
-      log.info(`[回應] ${name} 成功 (${elapsed}ms)`);
+      log.info(`[Response] ${name} success (${elapsed}ms)`);
 
       return {
         content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
@@ -269,10 +269,10 @@ export function createToolHandler(redmineClient: RedmineClient) {
     } catch (error) {
       const elapsed = Date.now() - startTime;
       const message = error instanceof Error ? error.message : String(error);
-      log.error(`[錯誤] ${name} 失敗: ${message} (${elapsed}ms)`);
+      log.error(`[Error] ${name} failed: ${message} (${elapsed}ms)`);
 
       return {
-        content: [{ type: "text", text: `錯誤: ${message}` }],
+        content: [{ type: "text", text: `Error: ${message}` }],
         isError: true,
       };
     }
