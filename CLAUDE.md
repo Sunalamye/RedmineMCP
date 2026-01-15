@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MCP Server for Redmine integration. Provides 31 API tools for Claude Code and OpenCode.
+MCP Server for Redmine integration. Provides 34 API tools for Claude Code and OpenCode.
 
 ## Commands
 

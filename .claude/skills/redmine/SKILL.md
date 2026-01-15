@@ -43,8 +43,8 @@ allowed-tools:
   - mcp__redmine__redmine_download
   # Search
   - mcp__redmine__redmine_search
-  # Generic Request (Escape Hatch)
-  - mcp__redmine__redmine_request
+  # Log Viewer
+  - mcp__redmine__redmine_log_viewer
   # Others
   - mcp__redmine__redmine_get_queries
   - mcp__redmine__redmine_get_roles
@@ -54,7 +54,7 @@ allowed-tools:
 
 # Redmine Skill
 
-Redmine integration skill with 31 APIs, supporting URL parsing and natural language queries.
+Redmine integration skill with 34 APIs, supporting URL parsing and natural language queries.
 
 > **This skill is the documentation source for all Redmine MCP tools.**
 
@@ -196,7 +196,7 @@ Create issue relation.
 
 | Resource | Purpose | Load When |
 |----------|---------|-----------|
-| `{baseDir}/references/api-reference.md` | Full 31 API parameter docs | Need advanced params |
+| `{baseDir}/references/api-reference.md` | Full 34 API parameter docs | Need advanced params |
 | `{baseDir}/references/file-operations.md` | File upload/download | Handle attachments |
 | `{baseDir}/references/advanced-api.md` | redmine_request usage | Use generic API |
 | `{baseDir}/references/textile-syntax.md` | Textile markup syntax | Write formatted content |

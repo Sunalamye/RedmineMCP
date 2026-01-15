@@ -1,6 +1,6 @@
 # Redmine MCP API Reference
 
-Complete API tool list, 27 tools total.
+Complete API tool list, 34 tools total.
 
 ## Issues
 
@@ -110,6 +110,35 @@ Complete API tool list, 27 tools total.
 
 ---
 
+## Files & Attachments
+
+| Tool | Description | Required Params |
+|------|-------------|-----------------|
+| `redmine_get_files` | Get project files | `project_id` |
+| `redmine_get_attachment` | Get attachment info | `id` |
+| `redmine_upload` | Upload file to Redmine | `file_path` |
+| `redmine_download` | Download attachment | `attachment_id`, `save_path` |
+
+---
+
+## Search
+
+| Tool | Description | Required Params |
+|------|-------------|-----------------|
+| `redmine_search` | Full-text search | `q` |
+
+### redmine_search Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `q` | Search keyword (required) |
+| `scope` | Search scope: all/issues/wiki_pages/news |
+| `project_id` | Limit to project |
+| `limit` | Max results |
+| `offset` | Skip count |
+
+---
+
 ## Others
 
 | Tool | Description | Required Params |
@@ -121,6 +150,5 @@ Complete API tool list, 27 tools total.
 | `redmine_get_queries` | Saved queries | - |
 | `redmine_get_roles` | Roles list | - |
 | `redmine_get_groups` | Groups list | - |
-| `redmine_get_files` | Project files | `project_id` |
-| `redmine_get_attachment` | Attachment info | `id` |
 | `redmine_get_news` | News list | - |
+| `redmine_log_viewer` | View MCP server logs | - |

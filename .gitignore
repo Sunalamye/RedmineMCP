@@ -22,6 +22,9 @@ Thumbs.db
 .env
 .env.local
 
+# MCP Config (contains API tokens)
+.mcp.json
+opencode.json
+
 # Bun
 *.bun-build
-bun.lock

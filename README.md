@@ -11,7 +11,7 @@ MCP Server for Redmine integration. Works with Claude Code and OpenCode.
 - Search across issues, wiki, and news
 - Manage wiki pages
 - Upload and download attachments
-- 31 API tools in total
+- 34 API tools in total
 
 ## Download
 
