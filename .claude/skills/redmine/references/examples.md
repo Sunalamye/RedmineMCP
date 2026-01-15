@@ -1,50 +1,50 @@
-# Redmine Skill 使用範例
+# Redmine Skill Usage Examples
 
-## Issue 操作
+## Issue Operations
 
-### 查詢 Issues
+### Query Issues
 
 ```
-# 我的開啟 Issues
+# My open issues
 redmine_get_issues({ assigned_to_id: "me", status_id: "open" })
 
-# 專案的所有 Issues
+# All project issues
 redmine_get_issues({ project_id: "my-project" })
 
-# 排除特定人員
+# Exclude specific user
 redmine_get_issues({ assigned_to_id: "!42", status_id: "open" })
 ```
 
-### 更新 Issue
+### Update Issue
 
 ```
-# 新增備註
-redmine_update_issue({ id: 12345, notes: "已修復" })
+# Add a note
+redmine_update_issue({ id: 12345, notes: "Fixed" })
 
-# 變更狀態 + 備註
-redmine_update_issue({ id: 12345, status_id: 5, notes: "已解決" })
+# Change status + add note
+redmine_update_issue({ id: 12345, status_id: 5, notes: "Resolved" })
 
-# 調整完成度
+# Update progress
 redmine_update_issue({ id: 12345, done_ratio: 50 })
 
-# 富文本備註
+# Rich text note
 redmine_update_issue({
   id: 12345,
-  notes: "h2. 修復說明\n\n*問題已修復*\n\n# 修改了 A\n# 修改了 B"
+  notes: "h2. Fix Summary\n\n*Issue fixed*\n\n# Modified file A\n# Modified file B"
 })
 ```
 
 ---
 
-## Time Entry 操作
+## Time Entry Operations
 
-### 查詢工時
+### Query Time Entries
 
 ```
-# 我的工時
+# My time entries
 redmine_get_time_entries({ user_id: "me" })
 
-# 專案本月工時
+# Project monthly time
 redmine_get_time_entries({
   project_id: "my-project",
   from: "2024-01-01",
@@ -52,17 +52,17 @@ redmine_get_time_entries({
 })
 ```
 
-### 記錄工時
+### Log Time
 
 ```
-# Issue 工時
+# Issue time entry
 redmine_create_time_entry({
   issue_id: 12345,
   hours: 2,
-  comments: "修復 Bug"
+  comments: "Bug fix"
 })
 
-# 專案工時
+# Project time entry
 redmine_create_time_entry({
   project_id: "my-project",
   hours: 4,
@@ -72,17 +72,17 @@ redmine_create_time_entry({
 
 ---
 
-## Issue Relations 操作
+## Issue Relations Operations
 
 ```
-# 建立阻擋關聯
+# Create blocking relation
 redmine_create_issue_relation({
   issue_id: 12345,
   issue_to_id: 12346,
   relation_type: "blocks"
 })
 
-# 建立先後關聯（延遲 3 天）
+# Create precedence relation (3 day delay)
 redmine_create_issue_relation({
   issue_id: 12345,
   issue_to_id: 12347,
@@ -90,38 +90,38 @@ redmine_create_issue_relation({
   delay: 3
 })
 
-# 刪除關聯
+# Delete relation
 redmine_delete_issue_relation({ relation_id: 123 })
 ```
 
 ---
 
-## Wiki 操作
+## Wiki Operations
 
 ```
-# 取得頁面列表
+# Get page list
 redmine_get_wiki_pages({ project_id: "my-project" })
 
-# 取得頁面內容
+# Get page content
 redmine_get_wiki_page({ project_id: "my-project", title: "HomePage" })
 
-# 更新頁面
+# Update page
 redmine_update_wiki_page({
   project_id: "my-project",
-  title: "API文件",
-  text: "h1. API 文件\n\n內容...",
-  comments: "更新 API 說明"
+  title: "API-Docs",
+  text: "h1. API Documentation\n\nContent...",
+  comments: "Updated API docs"
 })
 ```
 
 ---
 
-## URL 解析範例
+## URL Parsing Examples
 
-貼上 Redmine URL 自動轉換為 API 呼叫：
+Paste Redmine URL to automatically convert to API call:
 
-| URL | 轉換結果 |
-|-----|----------|
+| URL | Result |
+|-----|--------|
 | `/issues/12345` | `redmine_get_issue({ id: 12345 })` |
 | `/projects/xxx/issues?op[status_id]=o` | `redmine_get_issues({ project_id: "xxx", status_id: "open" })` |
 | `/projects/xxx/issues?op[assigned_to_id]=!&v[assigned_to_id][]=42` | `redmine_get_issues({ project_id: "xxx", assigned_to_id: "!42" })` |

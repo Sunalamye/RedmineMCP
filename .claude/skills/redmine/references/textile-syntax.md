@@ -1,53 +1,53 @@
-# Textile 富文本語法
+# Textile Markup Syntax
 
-Redmine 使用 Textile 標記語言，在 `notes` 和 Wiki 中可使用。
+Redmine uses Textile markup language for `notes` and Wiki content.
 
-## 基本格式
+## Basic Formatting
 
-| 效果 | 語法 |
-|------|------|
-| **粗體** | `*粗體*` |
-| _斜體_ | `_斜體_` |
-| 底線 | `+底線+` |
-| 刪除線 | `-刪除線-` |
-| 程式碼 | `@程式碼@` |
+| Effect | Syntax |
+|--------|--------|
+| **Bold** | `*bold*` |
+| _Italic_ | `_italic_` |
+| Underline | `+underline+` |
+| Strikethrough | `-strikethrough-` |
+| Code | `@code@` |
 
-## 標題
+## Headings
 
 ```textile
-h1. 標題一
-h2. 標題二
-h3. 標題三
+h1. Heading 1
+h2. Heading 2
+h3. Heading 3
 ```
 
-## 清單
+## Lists
 
 ```textile
-* 無序項目
-* 另一項目
+* Unordered item
+* Another item
 
-# 有序項目
-# 另一項目
+# Ordered item
+# Another item
 ```
 
-## 其他
+## Others
 
-| 效果 | 語法 |
-|------|------|
-| 引文 | `bq. 引文內容` |
-| 連結 | `"顯示文字":http://url` |
-| 圖片 | `!image.png!` |
-| 程式碼區塊 | `<pre>code</pre>` |
+| Effect | Syntax |
+|--------|--------|
+| Blockquote | `bq. Quote content` |
+| Link | `"Display text":http://url` |
+| Image | `!image.png!` |
+| Code block | `<pre>code</pre>` |
 
-## 範例
+## Example
 
 ```textile
-h2. 修復說明
+h2. Fix Summary
 
-*問題已修復*，變更內容：
+*Issue fixed*, changes made:
 
-# 修改了 A 檔案
-# 修改了 B 檔案
+# Modified file A
+# Modified file B
 
 @git commit abc123@
 ```

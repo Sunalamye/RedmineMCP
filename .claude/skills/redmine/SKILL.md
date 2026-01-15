@@ -1,7 +1,7 @@
 ---
 name: redmine
 version: 1.0.0
-description: Redmine 操作技能 - URL 解析、Issue 查詢與管理 (project)
+description: Redmine integration skill - URL parsing, issue query and management
 allowed-tools:
   # Issues
   - mcp__redmine__redmine_get_issue
@@ -54,39 +54,39 @@ allowed-tools:
 
 # Redmine Skill
 
-Redmine 整合操作技能（31 個 API），支援 URL 解析與自然語言查詢。
+Redmine integration skill with 31 APIs, supporting URL parsing and natural language queries.
 
-> **此 Skill 是所有 Redmine MCP 工具的文檔來源。**
+> **This skill is the documentation source for all Redmine MCP tools.**
 
-## 快速指令
+## Quick Commands
 
-| 使用者說 | 執行動作 |
-|---------|----------|
-| 我的工作 | `redmine_get_issues({ assigned_to_id: "me", status_id: "open" })` |
-| 專案列表 | `redmine_get_projects()` |
-| 誰是我 | `redmine_get_current_user()` |
-| 回覆 Issue #123 | `redmine_update_issue({ id: 123, notes: "..." })` |
-| 記錄工時 | `redmine_create_time_entry({ hours: N, ... })` |
-| 搜尋「關鍵字」 | `redmine_search({ q: "關鍵字" })` |
-| 下載附件 | `redmine_download({ attachment_id: N, save_path: "/path" })` |
+| User Says | Action |
+|-----------|--------|
+| my tasks | `redmine_get_issues({ assigned_to_id: "me", status_id: "open" })` |
+| project list | `redmine_get_projects()` |
+| who am I | `redmine_get_current_user()` |
+| reply to Issue #123 | `redmine_update_issue({ id: 123, notes: "..." })` |
+| log time | `redmine_create_time_entry({ hours: N, ... })` |
+| search "keyword" | `redmine_search({ q: "keyword" })` |
+| download attachment | `redmine_download({ attachment_id: N, save_path: "/path" })` |
 
-## URL 解析
+## URL Parsing
 
-偵測 Redmine URL 類型，自動呼叫對應 API：
+Detect Redmine URL type and automatically call corresponding API:
 
 ```
 /issues/{id}              → redmine_get_issue(id)
 /projects/{pid}/issues    → redmine_get_issues(project_id)
-/projects/{pid}/issues?...→ redmine_get_issues + 解析篩選條件
+/projects/{pid}/issues?...→ redmine_get_issues + parse filters
 ```
 
-### 執行流程
+### Execution Flow
 
-1. 執行 `bun run {baseDir}/scripts/parse-url.ts "<url>"`
-2. 依 `type` 判斷呼叫哪個 API
-3. 呼叫 MCP API 並格式化結果
+1. Run `bun run {baseDir}/scripts/parse-url.ts "<url>"`
+2. Determine which API to call based on `type`
+3. Call MCP API and format results
 
-### 篩選條件對照
+### Filter Mapping
 
 | Web Query | API Parameter |
 |-----------|---------------|
@@ -94,98 +94,98 @@ Redmine 整合操作技能（31 個 API），支援 URL 解析與自然語言查
 | `op[status_id]=c` | `status_id: "closed"` |
 | `op[assigned_to_id]=!` & `v[]=42` | `assigned_to_id: "!42"` |
 
-完整對照表見 `{baseDir}/references/operators.md`。
+See full mapping at `{baseDir}/references/operators.md`.
 
-## 核心 API 參數
+## Core API Parameters
 
 ### redmine_get_issues
 
-取得 Issues 列表，支援多種篩選條件。
+Get issues list with various filters.
 
-| 參數 | 類型 | 說明 | 範例 |
-|------|------|------|------|
-| `project_id` | string | 專案 ID 或識別碼 | `"my-project"` |
-| `tracker_id` | number | 追蹤標籤 ID | `20` |
-| `status_id` | string | 狀態：open/closed/*/數字 | `"open"` |
-| `assigned_to_id` | string | 指派者：me/ID/!ID | `"me"`, `"!42"` |
-| `limit` | number | 筆數上限 (max 100) | `25` |
-| `offset` | number | 跳過筆數（分頁） | `0` |
-| `sort` | string | 排序欄位 | `"updated_on:desc"` |
+| Parameter | Type | Description | Example |
+|-----------|------|-------------|---------|
+| `project_id` | string | Project ID or identifier | `"my-project"` |
+| `tracker_id` | number | Tracker ID | `20` |
+| `status_id` | string | Status: open/closed/*/number | `"open"` |
+| `assigned_to_id` | string | Assignee: me/ID/!ID | `"me"`, `"!42"` |
+| `limit` | number | Max results (max 100) | `25` |
+| `offset` | number | Skip count (pagination) | `0` |
+| `sort` | string | Sort field | `"updated_on:desc"` |
 
 ### redmine_get_issue
 
-取得單一 Issue 詳情，含 journals 和 attachments。
+Get single issue details with journals and attachments.
 
-| 參數 | 類型 | 必填 | 說明 |
-|------|------|------|------|
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
 | `id` | number | ✓ | Issue ID |
 
 ### redmine_update_issue
 
-更新 Issue：新增備註、變更狀態、指派者、完成度。
+Update issue: add notes, change status, assignee, progress.
 
-| 參數 | 類型 | 必填 | 說明 |
-|------|------|------|------|
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
 | `id` | number | ✓ | Issue ID |
-| `notes` | string | | 備註（支援 Textile 富文本） |
-| `status_id` | number | | 狀態 ID |
-| `assigned_to_id` | number | | 指派者 ID |
-| `done_ratio` | number | | 完成百分比 (0-100) |
-| `priority_id` | number | | 優先權 ID |
+| `notes` | string | | Notes (supports Textile markup) |
+| `status_id` | number | | Status ID |
+| `assigned_to_id` | number | | Assignee ID |
+| `done_ratio` | number | | Progress percentage (0-100) |
+| `priority_id` | number | | Priority ID |
 
 ### redmine_create_time_entry
 
-建立工時記錄。
+Create time entry.
 
-| 參數 | 類型 | 必填 | 說明 |
-|------|------|------|------|
-| `hours` | number | ✓ | 工時（小時） |
-| `issue_id` | number | | Issue ID（與 project_id 二選一） |
-| `project_id` | string | | 專案 ID |
-| `activity_id` | number | | 活動類型 ID |
-| `comments` | string | | 備註 |
-| `spent_on` | string | | 日期 (YYYY-MM-DD)，預設今天 |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `hours` | number | ✓ | Hours spent |
+| `issue_id` | number | | Issue ID (or project_id) |
+| `project_id` | string | | Project ID |
+| `activity_id` | number | | Activity type ID |
+| `comments` | string | | Comments |
+| `spent_on` | string | | Date (YYYY-MM-DD), defaults to today |
 
 ### redmine_search
 
-全文搜尋 Issues、Wiki、News 等。
+Full-text search across Issues, Wiki, News, etc.
 
-| 參數 | 類型 | 必填 | 說明 |
-|------|------|------|------|
-| `q` | string | ✓ | 搜尋關鍵字 |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `q` | string | ✓ | Search keyword |
 | `scope` | string | | all/issues/wiki_pages/news/... |
-| `project_id` | string | | 限定專案 |
-| `limit` | number | | 筆數上限 |
-| `offset` | number | | 跳過筆數 |
+| `project_id` | string | | Limit to project |
+| `limit` | number | | Max results |
+| `offset` | number | | Skip count |
 
 ### redmine_create_issue_relation
 
-建立 Issue 關聯。
+Create issue relation.
 
-| 參數 | 類型 | 必填 | 說明 |
-|------|------|------|------|
-| `issue_id` | number | ✓ | 來源 Issue ID |
-| `issue_to_id` | number | ✓ | 目標 Issue ID |
-| `relation_type` | string | ✓ | 關聯類型 |
-| `delay` | number | | 延遲天數（precedes/follows） |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `issue_id` | number | ✓ | Source Issue ID |
+| `issue_to_id` | number | ✓ | Target Issue ID |
+| `relation_type` | string | ✓ | Relation type |
+| `delay` | number | | Delay days (precedes/follows) |
 
-**關聯類型：** `relates`, `duplicates`, `blocks`, `blocked`, `precedes`, `follows`, `copied_to`, `copied_from`
+**Relation types:** `relates`, `duplicates`, `blocks`, `blocked`, `precedes`, `follows`, `copied_to`, `copied_from`
 
-## 輸出格式
+## Output Format
 
-### 單一 Issue
+### Single Issue
 
 ```
 **Issue #{id}**
-| 欄位 | 值 |
-|------|-----|
-| 標題 | {subject} |
-| 狀態 | {status} |
-| 指派 | {assigned_to} |
-| 進度 | {done_ratio}% |
+| Field | Value |
+|-------|-------|
+| Subject | {subject} |
+| Status | {status} |
+| Assignee | {assigned_to} |
+| Progress | {done_ratio}% |
 ```
 
-### Issues 列表
+### Issues List
 
 ```
 | ID | Subject | Status | Assigned | Updated |
@@ -196,13 +196,13 @@ Redmine 整合操作技能（31 個 API），支援 URL 解析與自然語言查
 
 | Resource | Purpose | Load When |
 |----------|---------|-----------|
-| `{baseDir}/references/api-reference.md` | 完整 31 個 API 參數說明 | 需要進階參數 |
-| `{baseDir}/references/file-operations.md` | 檔案上傳/下載操作 | 處理附件 |
-| `{baseDir}/references/advanced-api.md` | redmine_request 進階用法 | 使用通用 API |
-| `{baseDir}/references/textile-syntax.md` | Textile 富文本語法 | 撰寫格式化內容 |
-| `{baseDir}/references/examples.md` | 使用範例 | 學習用法 |
-| `{baseDir}/references/operators.md` | URL 篩選條件對照表 | 解析 URL 參數 |
-| `{baseDir}/scripts/parse-url.ts` | URL 解析腳本 | 自動解析 URL |
+| `{baseDir}/references/api-reference.md` | Full 31 API parameter docs | Need advanced params |
+| `{baseDir}/references/file-operations.md` | File upload/download | Handle attachments |
+| `{baseDir}/references/advanced-api.md` | redmine_request usage | Use generic API |
+| `{baseDir}/references/textile-syntax.md` | Textile markup syntax | Write formatted content |
+| `{baseDir}/references/examples.md` | Usage examples | Learn usage |
+| `{baseDir}/references/operators.md` | URL filter mapping | Parse URL params |
+| `{baseDir}/scripts/parse-url.ts` | URL parsing script | Auto-parse URLs |
 
 ---
 

@@ -11,7 +11,6 @@
 import { logger, type LogEntry } from "../logger.js";
 import { LOG_VIEWER_HTML } from "./ui.js";
 
-// Configuration
 const CONFIG = {
   enabled: process.env.LOG_VIEWER !== "false",
   basePort: parseInt(process.env.LOG_VIEWER_PORT || "3456", 10),
@@ -20,11 +19,8 @@ const CONFIG = {
   maxPortRetries: 10,
 };
 
-// Runtime state
 let currentPort: number | null = null;
 let serverInstance: ReturnType<typeof Bun.serve> | null = null;
-
-// Log history (ring buffer)
 const logHistory: LogEntry[] = [];
 
 function addToHistory(entry: LogEntry): void {
@@ -34,7 +30,6 @@ function addToHistory(entry: LogEntry): void {
   }
 }
 
-// Sanitization - remove potential API tokens
 function sanitize(entry: LogEntry): LogEntry {
   return {
     ...entry,
@@ -43,14 +38,12 @@ function sanitize(entry: LogEntry): LogEntry {
   };
 }
 
-// Validate Host header (prevent DNS rebinding attacks)
 function isValidHost(req: Request): boolean {
   const host = req.headers.get("host") || "";
   const hostname = host.split(":")[0];
   return ["127.0.0.1", "localhost"].includes(hostname);
 }
 
-// Try to start server on specified port
 function tryStartServer(port: number): ReturnType<typeof Bun.serve> | null {
   try {
     return Bun.serve({
@@ -64,14 +57,12 @@ function tryStartServer(port: number): ReturnType<typeof Bun.serve> | null {
 
         const url = new URL(req.url);
 
-        // WebSocket upgrade
         if (url.pathname === "/ws") {
           const upgraded = server.upgrade(req, { data: {} });
           if (upgraded) return undefined;
           return new Response("WebSocket upgrade failed", { status: 400 });
         }
 
-        // Main page
         if (url.pathname === "/" || url.pathname === "/index.html") {
           return new Response(LOG_VIEWER_HTML, {
             headers: {
@@ -81,7 +72,6 @@ function tryStartServer(port: number): ReturnType<typeof Bun.serve> | null {
           });
         }
 
-        // API: Get log history
         if (url.pathname === "/api/history") {
           return new Response(JSON.stringify(logHistory.map(sanitize)), {
             headers: {
@@ -91,7 +81,6 @@ function tryStartServer(port: number): ReturnType<typeof Bun.serve> | null {
           });
         }
 
-        // API: Get server info
         if (url.pathname === "/api/info") {
           return new Response(
             JSON.stringify({
@@ -130,30 +119,26 @@ function tryStartServer(port: number): ReturnType<typeof Bun.serve> | null {
   }
 }
 
-/** Get Log Viewer URL (if running) */
 export function getLogViewerUrl(): string | null {
-  if (!currentPort) return null;
-  return `http://localhost:${currentPort}`;
+  return currentPort ? `http://localhost:${currentPort}` : null;
 }
 
-/** Get Log Viewer port (if running) */
 export function getLogViewerPort(): number | null {
   return currentPort;
 }
 
-/** Check if Log Viewer is running */
 export function isLogViewerRunning(): boolean {
   return serverInstance !== null;
 }
 
-/** Start Log Viewer */
 export function startLogViewer(): void {
+  if (serverInstance) return;
+
   if (!CONFIG.enabled) {
     console.error("[LOG-VIEWER] Disabled (LOG_VIEWER=false)");
     return;
   }
 
-  // Try multiple ports
   for (let i = 0; i < CONFIG.maxPortRetries; i++) {
     const port = CONFIG.basePort + i;
     const server = tryStartServer(port);
@@ -162,7 +147,6 @@ export function startLogViewer(): void {
       serverInstance = server;
       currentPort = port;
 
-      // Subscribe to Logger events
       logger.on("log", (entry: LogEntry) => {
         addToHistory(entry);
         server.publish("logs", JSON.stringify(sanitize(entry)));
@@ -171,7 +155,6 @@ export function startLogViewer(): void {
       const url = getLogViewerUrl()!;
       console.error(`[LOG-VIEWER] Running at ${url}`);
 
-      // Auto open browser
       if (CONFIG.autoOpen) {
         const cmd =
           process.platform === "darwin"

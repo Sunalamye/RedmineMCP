@@ -1,6 +1,5 @@
 /**
  * MCP Tool Handlers
- * Using Handler Map pattern instead of switch statement
  */
 
 import {
@@ -19,6 +18,7 @@ import {
   getLogViewerPort,
   isLogViewerRunning,
 } from "../log-viewer/server.js";
+import { type ToolName } from "./definitions.js";
 
 export interface ToolResult {
   content: Array<{ type: "text"; text: string }>;
@@ -29,33 +29,15 @@ export interface ToolResult {
 type Args = Record<string, unknown> | undefined;
 type Handler = (client: RedmineClient, args: Args) => Promise<unknown>;
 
-// =============================================================================
-// Helper Functions
-// =============================================================================
-
-function requireId(args: Args): number {
-  const id = args?.id as number;
-  if (!id) throw new Error("Missing required parameter: id");
-  return id;
+function require<T>(args: Args, key: string): T {
+  const value = args?.[key] as T;
+  if (value === undefined || value === null) {
+    throw new Error(`Missing required parameter: ${key}`);
+  }
+  return value;
 }
 
-function requireIssueId(args: Args): number {
-  const issueId = args?.issue_id as number;
-  if (!issueId) throw new Error("Missing required parameter: issue_id");
-  return issueId;
-}
-
-function requireProjectId(args: Args): string {
-  const projectId = args?.project_id as string;
-  if (!projectId) throw new Error("Missing required parameter: project_id");
-  return projectId;
-}
-
-// =============================================================================
-// Handler Map
-// =============================================================================
-
-const handlers: Record<string, Handler> = {
+const handlers: Record<ToolName, Handler> = {
   // Issues
   redmine_get_issues: (client, args) => {
     const params: IssueListParams = {
@@ -70,7 +52,7 @@ const handlers: Record<string, Handler> = {
     return client.getIssues(params);
   },
 
-  redmine_get_issue: (client, args) => client.getIssue(requireId(args)),
+  redmine_get_issue: (client, args) => client.getIssue(require<number>(args, "id")),
 
   redmine_update_issue: (client, args) => {
     const params: IssueUpdateParams = {
@@ -80,13 +62,13 @@ const handlers: Record<string, Handler> = {
       done_ratio: args?.done_ratio as number | undefined,
       priority_id: args?.priority_id as number | undefined,
     };
-    return client.updateIssue(requireId(args), params);
+    return client.updateIssue(require<number>(args, "id"), params);
   },
 
-  redmine_get_journals: (client, args) => client.getJournals(requireIssueId(args)),
+  redmine_get_journals: (client, args) => client.getJournals(require<number>(args, "issue_id")),
 
   // Issue Relations
-  redmine_get_issue_relations: (client, args) => client.getIssueRelations(requireIssueId(args)),
+  redmine_get_issue_relations: (client, args) => client.getIssueRelations(require<number>(args, "issue_id")),
 
   redmine_create_issue_relation: (client, args) => {
     const params: IssueRelationParams = {
@@ -94,21 +76,18 @@ const handlers: Record<string, Handler> = {
       relation_type: args?.relation_type as string,
       delay: args?.delay as number | undefined,
     };
-    return client.createIssueRelation(requireIssueId(args), params);
+    return client.createIssueRelation(require<number>(args, "issue_id"), params);
   },
 
-  redmine_delete_issue_relation: (client, args) => {
-    const relationId = args?.relation_id as number;
-    if (!relationId) throw new Error("Missing required parameter: relation_id");
-    return client.deleteIssueRelation(relationId);
-  },
+  redmine_delete_issue_relation: (client, args) =>
+    client.deleteIssueRelation(require<number>(args, "relation_id")),
 
   // Projects
   redmine_get_projects: (client) => client.getProjects(),
-  redmine_get_project_members: (client, args) => client.getProjectMembers(requireProjectId(args)),
-  redmine_get_issue_categories: (client, args) => client.getIssueCategories(requireProjectId(args)),
-  redmine_get_versions: (client, args) => client.getVersions(requireProjectId(args)),
-  redmine_get_version: (client, args) => client.getVersion(requireId(args)),
+  redmine_get_project_members: (client, args) => client.getProjectMembers(require<string>(args, "project_id")),
+  redmine_get_issue_categories: (client, args) => client.getIssueCategories(require<string>(args, "project_id")),
+  redmine_get_versions: (client, args) => client.getVersions(require<string>(args, "project_id")),
+  redmine_get_version: (client, args) => client.getVersion(require<number>(args, "id")),
 
   // Users
   redmine_get_current_user: (client) => client.getCurrentUser(),
@@ -122,7 +101,7 @@ const handlers: Record<string, Handler> = {
       offset: args?.offset as number | undefined,
     }),
 
-  redmine_get_user: (client, args) => client.getUser(requireId(args)),
+  redmine_get_user: (client, args) => client.getUser(require<number>(args, "id")),
 
   // Enumerations
   redmine_get_trackers: (client) => client.getTrackers(),
@@ -159,19 +138,17 @@ const handlers: Record<string, Handler> = {
   },
 
   // Wiki
-  redmine_get_wiki_pages: (client, args) => client.getWikiPages(requireProjectId(args)),
+  redmine_get_wiki_pages: (client, args) => client.getWikiPages(require<string>(args, "project_id")),
 
   redmine_get_wiki_page: (client, args) => {
-    const projectId = requireProjectId(args);
-    const title = args?.title as string;
-    if (!title) throw new Error("Missing required parameter: title");
+    const projectId = require<string>(args, "project_id");
+    const title = require<string>(args, "title");
     return client.getWikiPage(projectId, title);
   },
 
   redmine_update_wiki_page: (client, args) => {
-    const projectId = requireProjectId(args);
-    const title = args?.title as string;
-    if (!title) throw new Error("Missing required parameter: title");
+    const projectId = require<string>(args, "project_id");
+    const title = require<string>(args, "title");
     const params: WikiPageParams = {
       text: args?.text as string,
       comments: args?.comments as string | undefined,
@@ -180,27 +157,23 @@ const handlers: Record<string, Handler> = {
   },
 
   // Files & Attachments
-  redmine_get_files: (client, args) => client.getFiles(requireProjectId(args)),
-  redmine_get_attachment: (client, args) => client.getAttachment(requireId(args)),
+  redmine_get_files: (client, args) => client.getFiles(require<string>(args, "project_id")),
+  redmine_get_attachment: (client, args) => client.getAttachment(require<number>(args, "id")),
 
   redmine_upload: (client, args) => {
-    const filePath = args?.file_path as string;
-    if (!filePath) throw new Error("Missing required parameter: file_path");
+    const filePath = require<string>(args, "file_path");
     return client.uploadFile(filePath, args?.description as string | undefined);
   },
 
   redmine_download: (client, args) => {
-    const attachmentId = args?.attachment_id as number;
-    const savePath = args?.save_path as string;
-    if (!attachmentId) throw new Error("Missing required parameter: attachment_id");
-    if (!savePath) throw new Error("Missing required parameter: save_path");
+    const attachmentId = require<number>(args, "attachment_id");
+    const savePath = require<string>(args, "save_path");
     return client.downloadAttachment(attachmentId, savePath);
   },
 
   // Search
   redmine_search: (client, args) => {
-    const query = args?.q as string;
-    if (!query) throw new Error("Missing required parameter: q");
+    const query = require<string>(args, "q");
     const params: SearchParams = {
       scope: args?.scope as string | undefined,
       project_id: args?.project_id as string | undefined,
@@ -213,7 +186,7 @@ const handlers: Record<string, Handler> = {
   // News
   redmine_get_news: (client, args) => client.getNews(args?.project_id as string | undefined),
 
-  // Log Viewer (client not required)
+  // Log Viewer
   redmine_log_viewer: async (_client, args) => {
     const running = isLogViewerRunning();
     const url = getLogViewerUrl();
@@ -226,7 +199,6 @@ const handlers: Record<string, Handler> = {
       };
     }
 
-    // Optional: open browser
     if (args?.open === true) {
       const cmd =
         process.platform === "darwin"
@@ -246,17 +218,13 @@ const handlers: Record<string, Handler> = {
   },
 };
 
-// =============================================================================
-// Main Handler
-// =============================================================================
-
 export function createToolHandler(redmineClient: RedmineClient) {
   return async (name: string, args: Args): Promise<ToolResult> => {
     const startTime = Date.now();
     log.info(`[Request] ${name} ${args ? JSON.stringify(args) : ""}`);
 
     try {
-      const handler = handlers[name];
+      const handler = handlers[name as ToolName];
       if (!handler) throw new Error(`Unknown tool: ${name}`);
 
       const result = await handler(redmineClient, args);

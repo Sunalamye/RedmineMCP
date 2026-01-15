@@ -1,23 +1,23 @@
 # Advanced API (redmine_request)
 
-通用 Redmine API 呼叫工具，用於未實作的 API 端點。
+Generic Redmine API call tool for unimplemented API endpoints.
 
-## 使用時機
+## When to Use
 
-- 需要呼叫尚未封裝的 Redmine API
-- 需要自訂 API 參數組合
-- 探索新 API 功能
+- Need to call Redmine API not yet wrapped
+- Need custom API parameter combinations
+- Explore new API features
 
-## 參數
+## Parameters
 
-| 參數 | 類型 | 必填 | 說明 |
-|------|------|------|------|
-| path | string | ✓ | API 路徑，如 `/issues.json` |
-| method | string | | HTTP 方法：get, post, put, delete（預設 get） |
-| data | object | | 請求內容（用於 POST/PUT） |
-| params | object | | 查詢參數 |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| path | string | ✓ | API path, e.g. `/issues.json` |
+| method | string | | HTTP method: get, post, put, delete (default: get) |
+| data | object | | Request body (for POST/PUT) |
+| params | object | | Query parameters |
 
-## 回傳
+## Response
 
 ```json
 {
@@ -27,22 +27,22 @@
 }
 ```
 
-## 使用範例
+## Usage Examples
 
-### GET 請求
+### GET Request
 
 ```typescript
-// 取得專案成員（含分頁）
+// Get project members (with pagination)
 const result = await redmine_request({
   path: "/projects/myproject/memberships.json",
   params: { limit: "100", offset: "0" }
 });
 ```
 
-### POST 請求
+### POST Request
 
 ```typescript
-// 建立 Issue
+// Create Issue
 const result = await redmine_request({
   path: "/issues.json",
   method: "post",
@@ -50,17 +50,17 @@ const result = await redmine_request({
     issue: {
       project_id: 1,
       tracker_id: 1,
-      subject: "新功能請求",
-      description: "詳細說明..."
+      subject: "New feature request",
+      description: "Detailed description..."
     }
   }
 });
 ```
 
-### PUT 請求
+### PUT Request
 
 ```typescript
-// 更新版本
+// Update version
 const result = await redmine_request({
   path: "/versions/5.json",
   method: "put",
@@ -73,29 +73,29 @@ const result = await redmine_request({
 });
 ```
 
-### DELETE 請求
+### DELETE Request
 
 ```typescript
-// 刪除附件
+// Delete attachment
 const result = await redmine_request({
   path: "/attachments/123.json",
   method: "delete"
 });
 ```
 
-## 常用未封裝 API
+## Common Unwrapped APIs
 
 ### Issue Watchers
 
 ```typescript
-// 新增 watcher
+// Add watcher
 await redmine_request({
   path: "/issues/123/watchers.json",
   method: "post",
   data: { user_id: 5 }
 });
 
-// 移除 watcher
+// Remove watcher
 await redmine_request({
   path: "/issues/123/watchers/5.json",
   method: "delete"
@@ -105,15 +105,15 @@ await redmine_request({
 ### Custom Fields
 
 ```typescript
-// 更新自訂欄位
+// Update custom fields
 await redmine_request({
   path: "/issues/123.json",
   method: "put",
   data: {
     issue: {
       custom_fields: [
-        { id: 1, value: "高優先" },
-        { id: 2, value: ["選項A", "選項B"] }
+        { id: 1, value: "High Priority" },
+        { id: 2, value: ["Option A", "Option B"] }
       ]
     }
   }
@@ -123,7 +123,7 @@ await redmine_request({
 ### Project Modules
 
 ```typescript
-// 取得專案詳情（含 modules）
+// Get project details (with modules)
 await redmine_request({
   path: "/projects/myproject.json",
   params: { include: "trackers,issue_categories,enabled_modules" }
@@ -133,7 +133,7 @@ await redmine_request({
 ### Memberships
 
 ```typescript
-// 新增專案成員
+// Add project member
 await redmine_request({
   path: "/projects/myproject/memberships.json",
   method: "post",
@@ -146,7 +146,7 @@ await redmine_request({
 });
 ```
 
-## 錯誤處理
+## Error Handling
 
 ```typescript
 const result = await redmine_request({ path: "/issues/99999.json" });
@@ -160,13 +160,13 @@ if (result.status_code === 404) {
 }
 ```
 
-## 注意事項
+## Notes
 
-1. **路徑格式**：必須包含 `.json` 後綴
-2. **權限**：遵循 Redmine 權限設定
-3. **HTTP 方法**：大小寫不敏感
-4. **回傳解析**：自動解析 JSON 回應
+1. **Path format**: Must include `.json` suffix
+2. **Permissions**: Follows Redmine permission settings
+3. **HTTP method**: Case insensitive
+4. **Response parsing**: Automatically parses JSON response
 
-## Redmine REST API 文檔
+## Redmine REST API Documentation
 
-完整 API 參考：https://www.redmine.org/projects/redmine/wiki/Rest_api
+Full API reference: https://www.redmine.org/projects/redmine/wiki/Rest_api

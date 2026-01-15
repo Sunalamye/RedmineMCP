@@ -56,34 +56,27 @@ class Logger extends EventEmitter {
     const levelTag = level.toUpperCase().padEnd(5);
     const raw = `[${timestamp}] [${levelTag}] ${msg}`;
 
-    // Write to file
     fs.appendFileSync(this.logFile, raw + "\n");
     console.error(`[${levelTag}] ${msg}`);
 
-    // Parse tool name and execution time
     const entry = this.parseLogEntry(timestamp, level, msg, raw);
-
-    // Emit event to WebSocket subscribers
     this.emit("log", entry);
   }
 
   private parseLogEntry(timestamp: string, level: LogLevel, msg: string, raw: string): LogEntry {
     const entry: LogEntry = { timestamp, level, message: msg, raw };
 
-    // Parse [Request] tool_name {...}
     const requestMatch = msg.match(/^\[Request\]\s+(\w+)/);
     if (requestMatch) {
       entry.tool = requestMatch[1];
     }
 
-    // Parse [Response] tool_name success (123ms)
     const responseMatch = msg.match(/^\[Response\]\s+(\w+)\s+success\s+\((\d+)ms\)/);
     if (responseMatch) {
       entry.tool = responseMatch[1];
       entry.duration_ms = parseInt(responseMatch[2], 10);
     }
 
-    // Parse [Error] tool_name failed: ... (123ms)
     const errorMatch = msg.match(/^\[Error\]\s+(\w+)\s+failed:.*\((\d+)ms\)/);
     if (errorMatch) {
       entry.tool = errorMatch[1];
@@ -107,16 +100,6 @@ class Logger extends EventEmitter {
 
   error(msg: string): void {
     this.write("error", msg);
-  }
-
-  /** Get current log file path */
-  getLogFile(): string {
-    return this.logFile;
-  }
-
-  /** Get current log level */
-  getLogLevel(): LogLevel {
-    return this.logLevel;
   }
 }
 
