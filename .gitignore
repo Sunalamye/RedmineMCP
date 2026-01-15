@@ -28,3 +28,6 @@ opencode.json
 
 # Bun
 *.bun-build
+
+# Test files with hardcoded credentials
+test-full.ts
