@@ -1,52 +1,55 @@
 # Redmine MCP
 
-MCP Server for Redmine integration, supporting Claude Code and OpenCode.
+MCP Server for Redmine integration. Works with Claude Code and OpenCode.
 
-## 功能
+## Features
 
-- 取得 Issues 列表（支援篩選條件）
-- 取得單一 Issue 詳情（含歷史紀錄與附件）
-- 取得專案、追蹤標籤、狀態列表
-- 取得專案成員
-- 取得當前使用者資訊
+- Get issues list with filters (project, status, assignee, tracker)
+- Get single issue details with history and attachments
+- Update issues (add notes, change status, assignee, etc.)
+- Log time entries
+- Search across issues, wiki, and news
+- Manage wiki pages
+- Upload and download attachments
+- 31 API tools in total
 
-## 下載
+## Download
 
-| 版本 | 檔案 | 大小 | 需求 |
-|------|------|------|------|
-| 原始碼版 | `redmine-mcp-src.zip` | 12K | 需安裝 Bun |
-| macOS 執行檔 | `redmine-mcp-macos.zip` | 21M | 免安裝，直接執行 |
+| Version | File | Size | Requirements |
+|---------|------|------|--------------|
+| Source | `redmine-mcp-src.zip` | 12K | Bun required |
+| macOS Binary | `redmine-mcp-macos.zip` | 21M | Ready to run |
 
-## 安裝
+## Installation
 
-### 快速安裝（推薦）
+### Quick Install (Recommended)
 
-下載任一版本後，執行安裝腳本：
+Download and run the install script:
 
 ```bash
 unzip redmine-mcp-*.zip
 ./install.sh
 ```
 
-安裝腳本會引導你：
-1. 選擇 Claude Code 或 OpenCode
-2. 指定安裝目錄
-3. 輸入 Redmine URL 和 API Token
-4. 自動產生設定檔
+The script will guide you through:
+1. Choose Claude Code or OpenCode
+2. Set installation directory
+3. Enter Redmine URL and API Token
+4. Generate configuration file
 
-### 手動安裝
+### Manual Installation
 
-#### 方式 A：使用執行檔
+#### Option A: Binary Version
 
-1. 下載 `redmine-mcp-macos.zip`
-2. 解壓縮
-3. 跳至「取得 API Token」步驟
+1. Download `redmine-mcp-macos.zip`
+2. Extract the archive
+3. Continue to "Getting Your API Token"
 
-#### 方式 B：使用原始碼
+#### Option B: Source Version
 
-1. 下載 `redmine-mcp-src.zip`
-2. 解壓縮
-3. 安裝 Bun：
+1. Download `redmine-mcp-src.zip`
+2. Extract the archive
+3. Install Bun:
 
 **macOS / Linux:**
 ```bash
@@ -58,32 +61,39 @@ curl -fsSL https://bun.sh/install | bash
 powershell -c "irm bun.sh/install.ps1 | iex"
 ```
 
-4. 安裝依賴：
+4. Install dependencies:
 ```bash
 bun install
 ```
 
-## 取得 API Token
+## Getting Your API Token
 
-1. 登入 Redmine
-2. 點擊右上角帳號 → **我的帳戶**
-3. 在頁面右側找到 **API 存取金鑰**
-4. 點擊 **顯示** 按鈕取得你的 API Token
+1. Log in to Redmine
+2. Click your account name (top-right) → **My account**
+3. Find **API access key** on the right side
+4. Click **Show** to reveal your token
 
 ```
-我的帳戶頁面
-├── 左側：個人資訊
-└── 右側：API 存取金鑰
-         └── [顯示] 按鈕 ← 點這裡
+My account page
+├── Left: Personal information
+└── Right: API access key
+         └── [Show] button ← Click here
 ```
 
-## 設定 MCP
+## Configuration
+
+### Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `REDMINE_URL` | Your Redmine URL |
+| `REDMINE_TOKEN` | Your API Token |
 
 ### Claude Code
 
-建立 `.mcp.json`：
+Create `.mcp.json` in your project directory:
 
-**執行檔版：**
+**Binary version:**
 ```json
 {
   "mcpServers": {
@@ -98,7 +108,7 @@ bun install
 }
 ```
 
-**原始碼版：**
+**Source version:**
 ```json
 {
   "mcpServers": {
@@ -116,9 +126,9 @@ bun install
 
 ### OpenCode
 
-建立 `opencode.json`：
+Create `opencode.json` in your project directory:
 
-**執行檔版：**
+**Binary version:**
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
@@ -136,7 +146,7 @@ bun install
 }
 ```
 
-**原始碼版：**
+**Source version:**
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
@@ -154,71 +164,53 @@ bun install
 }
 ```
 
-## 使用方式
+## Usage
 
-### 啟動 MCP Server
-
-```bash
-bun run src/index.ts
-```
-
-### 可用工具
+### Available Tools
 
 | Tool | Description |
 |------|-------------|
-| `redmine_get_issues` | 取得 Issues 列表 |
-| `redmine_get_issue` | 取得單一 Issue 詳情 |
-| `redmine_get_projects` | 取得專案列表 |
-| `redmine_get_trackers` | 取得追蹤標籤列表 |
-| `redmine_get_statuses` | 取得狀態列表 |
-| `redmine_get_project_members` | 取得專案成員 |
-| `redmine_get_current_user` | 取得當前使用者 |
+| `redmine_get_issues` | Get issues list |
+| `redmine_get_issue` | Get single issue details |
+| `redmine_update_issue` | Update issue (notes, status, etc.) |
+| `redmine_get_projects` | Get projects list |
+| `redmine_get_trackers` | Get trackers list |
+| `redmine_get_statuses` | Get status list |
+| `redmine_get_project_members` | Get project members |
+| `redmine_get_current_user` | Get current user info |
+| `redmine_create_time_entry` | Log time entry |
+| `redmine_search` | Full-text search |
 
-### 範例
+### Examples
 
 ```
-# 取得所有開啟的 Issues
+# Get all open issues
 redmine_get_issues(status_id: "open")
 
-# 取得特定專案的 Issues
+# Get issues for a specific project
 redmine_get_issues(project_id: "my-project")
 
-# 取得單一 Issue
+# Get single issue details
 redmine_get_issue(id: 12345)
 
-# 取得指派給自己的 Issues
+# Get issues assigned to me
 redmine_get_issues(assigned_to_id: "me")
 
-# 排除特定使用者
+# Exclude specific user
 redmine_get_issues(assigned_to_id: "!42")
+
+# Add a note to an issue
+redmine_update_issue(id: 12345, notes: "Task completed")
+
+# Log 2 hours on an issue
+redmine_create_time_entry(issue_id: 12345, hours: 2, comments: "Bug fix")
 ```
 
-## 檔案說明
+## Security Notes
 
-| 檔案 | 說明 |
-|------|------|
-| `install.sh` | 互動式安裝腳本 |
-| `USAGE.md` | 詳細使用指南 |
-| `redmine-mcp` | 執行檔（僅 macOS 版） |
-| `.mcp-E.json` | Claude Code 設定範例（執行檔版） |
-| `.mcp-E-src.json` | Claude Code 設定範例（原始碼版） |
-| `opencodeE.json` | OpenCode 設定範例（執行檔版） |
-| `opencodeE-src.json` | OpenCode 設定範例（原始碼版） |
-| `src/index.ts` | MCP Server 主程式 |
-| `src/redmine-client.ts` | Redmine API Client |
-| `.claude/skills/redmine/` | Redmine URL 解析 Skill |
-
-## 注意事項
-
-- `.mcp.json` 和 `opencode.json` 包含你的 API Token，**請勿提交到版本控制**
-- 範例檔案 `.mcp-E.json` 和 `opencodeE.json` 不含真實 Token，可安全分享
-
-## 環境變數
-
-| 變數 | 說明 |
-|------|------|
-| `REDMINE_URL` | Redmine 網址 |
-| `REDMINE_TOKEN` | API Token |
+- `.mcp.json` and `opencode.json` contain your API token
+- **Do not commit these files to version control**
+- Use example files as templates (they contain no real tokens)
 
 ## License
 
