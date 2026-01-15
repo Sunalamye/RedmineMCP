@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  redmine:
+    image: redmine:5.1
+    ports:
+      - "3000:3000"
+    environment:
+      REDMINE_DB_MYSQL: db
+      REDMINE_DB_PASSWORD: redmine
+      REDMINE_SECRET_KEY_BASE: supersecretkey123456789
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: redmine
+      MYSQL_DATABASE: redmine
+      MYSQL_USER: redmine
+      MYSQL_PASSWORD: redmine
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uredmine", "-predmine"]
+      interval: 5s
+      timeout: 5s
+      retries: 10

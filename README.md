@@ -212,6 +212,32 @@ redmine_create_time_entry(issue_id: 12345, hours: 2, comments: "Bug fix")
 - **Do not commit these files to version control**
 - Use example files as templates (they contain no real tokens)
 
+## Testing
+
+A Docker Compose file is provided to quickly spin up a local Redmine instance for testing.
+
+```bash
+# Start Redmine + MySQL
+docker-compose -f docker-compose.test.yml up -d
+
+# Wait for Redmine to be ready (first boot may take 1-2 minutes)
+# Then access http://localhost:3000
+# Default admin login: admin / admin
+```
+
+After first login, enable API access:
+1. Go to **Administration** → **Settings** → **API**
+2. Check **Enable REST web service**
+3. Create an API token from **My account** page
+
+```bash
+# Stop and remove containers
+docker-compose -f docker-compose.test.yml down
+
+# Stop and remove containers + data
+docker-compose -f docker-compose.test.yml down -v
+```
+
 ## License
 
 MIT
