@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "redmine": {
+      "command": "bun",
+      "args": ["run", "./src/index.ts"],
+      "env": {
+        "REDMINE_URL": "https://your-redmine.example.com",
+        "REDMINE_TOKEN": "your-api-token-here"
+      }
+    }
+  }
+}

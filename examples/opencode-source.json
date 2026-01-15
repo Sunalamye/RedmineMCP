@@ -1,0 +1,14 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "redmine": {
+      "type": "local",
+      "command": ["bun", "run", "./src/index.ts"],
+      "enabled": true,
+      "environment": {
+        "REDMINE_URL": "https://your-redmine.example.com",
+        "REDMINE_TOKEN": "your-api-token-here"
+      }
+    }
+  }
+}

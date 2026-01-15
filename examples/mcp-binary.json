@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "redmine": {
+      "command": "./redmine-mcp",
+      "env": {
+        "REDMINE_URL": "https://your-redmine.example.com",
+        "REDMINE_TOKEN": "your-api-token-here"
+      }
+    }
+  }
+}
