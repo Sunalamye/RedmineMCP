@@ -153,6 +153,118 @@ export const LOG_VIEWER_HTML = `<!DOCTYPE html>
       color: #d1d5db;
     }
 
+    /* Clickable JSON */
+    .log-entry.has-json {
+      cursor: pointer;
+    }
+
+    .log-entry.has-json:hover .log-message {
+      color: #60a5fa;
+    }
+
+    .json-key { color: #f472b6; }
+    .json-string { color: #34d399; }
+    .json-number { color: #fbbf24; }
+    .json-boolean { color: #60a5fa; }
+    .json-null { color: #9ca3af; }
+
+    .json-toggle {
+      color: #666;
+      font-size: 11px;
+      margin-left: 8px;
+    }
+
+    .log-entry.has-json:hover .json-toggle {
+      color: #60a5fa;
+    }
+
+    /* JSON Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+    }
+
+    .modal-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: #1a1a2e;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid #0f3460;
+      background: #16213e;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .modal-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #e94560;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: #666;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0 8px;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      color: #e94560;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow: auto;
+      flex: 1;
+    }
+
+    .modal-json {
+      background: #0d1b2a;
+      border: 1px solid #1e3a5f;
+      border-radius: 6px;
+      padding: 16px 20px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    .modal-info {
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 12px;
+    }
+
     /* Status Bar */
     .status-bar {
       background: #16213e;
@@ -250,6 +362,20 @@ export const LOG_VIEWER_HTML = `<!DOCTYPE html>
     <div id="lastUpdate">-</div>
   </div>
 
+  <!-- JSON Modal -->
+  <div class="modal-overlay" id="jsonModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title" id="modalTitle">JSON Details</span>
+        <button class="modal-close" id="modalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-info" id="modalInfo"></div>
+        <div class="modal-json" id="modalJson"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // State
     const state = {
@@ -294,6 +420,70 @@ export const LOG_VIEWER_HTML = `<!DOCTYPE html>
       return '<span class="log-duration ' + cls + '">' + ms + 'ms</span>';
     }
 
+    // Extract JSON from message
+    function extractJson(message) {
+      // Match JSON object or array in message
+      const match = message.match(/(\\{[\\s\\S]*\\}|\\[[\\s\\S]*\\])/);
+      if (!match) return null;
+      try {
+        const parsed = JSON.parse(match[1]);
+        return { json: parsed, raw: match[1] };
+      } catch {
+        return null;
+      }
+    }
+
+    // Syntax highlight JSON
+    function syntaxHighlight(json) {
+      const str = JSON.stringify(json, null, 2);
+      return str.replace(/("(\\\\u[a-zA-Z0-9]{4}|\\\\[^u]|[^\\\\"])*"(\\s*:)?|\\b(true|false|null)\\b|-?\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d+)?)/g, function(match) {
+        let cls = 'json-number';
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) {
+            cls = 'json-key';
+            match = match.slice(0, -1); // Remove colon for styling
+            return '<span class="' + cls + '">' + escapeHtml(match) + '</span>:';
+          } else {
+            cls = 'json-string';
+          }
+        } else if (/true|false/.test(match)) {
+          cls = 'json-boolean';
+        } else if (/null/.test(match)) {
+          cls = 'json-null';
+        }
+        return '<span class="' + cls + '">' + escapeHtml(match) + '</span>';
+      });
+    }
+
+    // Modal elements
+    const jsonModal = document.getElementById('jsonModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalInfo = document.getElementById('modalInfo');
+    const modalJson = document.getElementById('modalJson');
+    const modalClose = document.getElementById('modalClose');
+
+    // Show JSON modal
+    function showJsonModal(log, jsonData) {
+      modalTitle.textContent = log.tool ? log.tool + ' Response' : 'JSON Details';
+      modalInfo.textContent = formatTime(log.timestamp) + ' - ' + log.level.toUpperCase();
+      modalJson.innerHTML = syntaxHighlight(jsonData.json);
+      jsonModal.classList.add('visible');
+    }
+
+    // Hide JSON modal
+    function hideJsonModal() {
+      jsonModal.classList.remove('visible');
+    }
+
+    // Modal event listeners
+    modalClose.addEventListener('click', hideJsonModal);
+    jsonModal.addEventListener('click', function(e) {
+      if (e.target === jsonModal) hideJsonModal();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') hideJsonModal();
+    });
+
     // Create log entry HTML
     function createLogEntry(log) {
       const div = document.createElement('div');
@@ -302,12 +492,30 @@ export const LOG_VIEWER_HTML = `<!DOCTYPE html>
       div.dataset.tool = log.tool || '';
       div.dataset.message = log.message.toLowerCase();
 
+      const jsonData = extractJson(log.message);
+      const hasJson = jsonData !== null;
+
+      if (hasJson) {
+        div.classList.add('has-json');
+      }
+
+      let messageHtml = escapeHtml(log.message);
+      if (hasJson) {
+        messageHtml += '<span class="json-toggle">[click to view]</span>';
+      }
+
       div.innerHTML =
         '<span class="log-time">' + formatTime(log.timestamp) + '</span>' +
         '<span class="log-level ' + log.level + '">' + log.level + '</span>' +
         '<span class="log-tool">' + (log.tool || '-') + '</span>' +
         formatDuration(log.duration_ms) +
-        '<span class="log-message">' + escapeHtml(log.message) + '</span>';
+        '<span class="log-message">' + messageHtml + '</span>';
+
+      if (hasJson) {
+        div.addEventListener('click', function() {
+          showJsonModal(log, jsonData);
+        });
+      }
 
       return div;
     }
