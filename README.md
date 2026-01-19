@@ -1,99 +1,52 @@
 # Redmine MCP
 
-MCP Server for Redmine integration. Works with Claude Code and OpenCode.
+MCP Server for Redmine integration. A high-performance Rust implementation with 35 API tools.
 
 ## Features
 
-- Get issues list with filters (project, status, assignee, tracker)
-- Get single issue details with history and attachments
-- Update issues (add notes, change status, assignee, etc.)
-- Log time entries
-- Search across issues, wiki, and news
-- Manage wiki pages
-- Upload and download attachments
-- 34 API tools in total
+- **35 API Tools** - Complete Redmine API coverage
+- **Log Viewer** - Real-time web-based log viewer with WebSocket support
+- **Cross-Platform** - Pre-built binaries for macOS, Linux, and Windows
+- **High Performance** - Native Rust implementation with async I/O
+
+### Tool Categories
+
+| Category | Tools |
+|----------|-------|
+| Issues | get_issues, get_issue, update_issue, get_journals |
+| Time Entries | get_time_entries, create_time_entry, get_activities |
+| Projects & Users | get_projects, get_members, get_users, get_current_user |
+| Wiki | get_wiki_pages, get_wiki_page, update_wiki_page |
+| Files | get_files, get_attachment, upload, download |
+| Search | search (full-text across issues/wiki/news) |
+| Generic | request (custom API calls) |
+| Utilities | log_viewer |
 
 ## Download
 
-| Version | File | Size | Requirements |
-|---------|------|------|--------------|
-| Source | `redmine-mcp-src.zip` | 12K | Bun required |
-| macOS Binary | `redmine-mcp-macos.zip` | 21M | Ready to run |
+Pre-built binaries are available from the [Releases](https://github.com/soane/redmine-mcp/releases) page.
 
-## Installation
+| Platform | File | Architecture |
+|----------|------|--------------|
+| macOS | `redmine-mcp-*-macos-arm64` | Apple Silicon (M1/M2/M3) |
+| Linux | `redmine-mcp-*-linux-arm64` | ARM64 |
+| Windows | `redmine-mcp-*-windows-x64.exe` | x64 |
 
-### Quick Install (Recommended)
+## Quick Start
 
-Download and run the install script:
+### 1. Get Your API Token
 
-```bash
-unzip redmine-mcp-*.zip
-./install.sh
-```
-
-The script will guide you through:
-1. Choose Claude Code or OpenCode
-2. Set installation directory
-3. Enter Redmine URL and API Token
-4. Generate configuration file
-
-### Manual Installation
-
-#### Option A: Binary Version
-
-1. Download `redmine-mcp-macos.zip`
-2. Extract the archive
-3. Continue to "Getting Your API Token"
-
-#### Option B: Source Version
-
-1. Download `redmine-mcp-src.zip`
-2. Extract the archive
-3. Install Bun:
-
-**macOS / Linux:**
-```bash
-curl -fsSL https://bun.sh/install | bash
-```
-
-**Windows:**
-```powershell
-powershell -c "irm bun.sh/install.ps1 | iex"
-```
-
-4. Install dependencies:
-```bash
-bun install
-```
-
-## Getting Your API Token
-
-1. Log in to Redmine
-2. Click your account name (top-right) → **My account**
-3. Find **API access key** on the right side
+1. Log in to your Redmine instance
+2. Go to **My account** (click your username)
+3. Find **API access key** on the right sidebar
 4. Click **Show** to reveal your token
 
-```
-My account page
-├── Left: Personal information
-└── Right: API access key
-         └── [Show] button ← Click here
-```
+### 2. Configure MCP Client
 
-## Configuration
-
-### Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `REDMINE_URL` | Your Redmine URL |
-| `REDMINE_TOKEN` | Your API Token |
-
-### Claude Code
+#### Claude Code
 
 Create `.mcp.json` in your project directory:
 
-**Binary version:**
 ```json
 {
   "mcpServers": {
@@ -101,34 +54,18 @@ Create `.mcp.json` in your project directory:
       "command": "/path/to/redmine-mcp",
       "env": {
         "REDMINE_URL": "https://your-redmine.example.com",
-        "REDMINE_TOKEN": "your-api-token-here"
+        "REDMINE_TOKEN": "your-api-token-here",
+        "LOG_VIEWER": "true"
       }
     }
   }
 }
 ```
 
-**Source version:**
-```json
-{
-  "mcpServers": {
-    "redmine": {
-      "command": "bun",
-      "args": ["run", "/path/to/src/index.ts"],
-      "env": {
-        "REDMINE_URL": "https://your-redmine.example.com",
-        "REDMINE_TOKEN": "your-api-token-here"
-      }
-    }
-  }
-}
-```
-
-### OpenCode
+#### OpenCode
 
 Create `opencode.json` in your project directory:
 
-**Binary version:**
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
@@ -146,97 +83,95 @@ Create `opencode.json` in your project directory:
 }
 ```
 
-**Source version:**
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "mcp": {
-    "redmine": {
-      "type": "local",
-      "command": ["bun", "run", "./src/index.ts"],
-      "enabled": true,
-      "environment": {
-        "REDMINE_URL": "https://your-redmine.example.com",
-        "REDMINE_TOKEN": "your-api-token-here"
-      }
-    }
-  }
-}
-```
+## Environment Variables
 
-## Usage
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `REDMINE_URL` | Yes | - | Redmine instance URL |
+| `REDMINE_TOKEN` | Yes | - | API token |
+| `LOG_LEVEL` | No | `info` | Log level: debug/info/warn/error |
+| `LOG_VIEWER` | No | `true` | Enable Log Viewer web UI |
+| `LOG_VIEWER_PORT` | No | `3456` | Log Viewer server port |
+| `LOG_VIEWER_OPEN` | No | `true` | Auto-open browser on startup |
 
-### Available Tools
+## Usage Examples
 
-| Tool | Description |
-|------|-------------|
-| `redmine_get_issues` | Get issues list |
-| `redmine_get_issue` | Get single issue details |
-| `redmine_update_issue` | Update issue (notes, status, etc.) |
-| `redmine_get_projects` | Get projects list |
-| `redmine_get_trackers` | Get trackers list |
-| `redmine_get_statuses` | Get status list |
-| `redmine_get_project_members` | Get project members |
-| `redmine_get_current_user` | Get current user info |
-| `redmine_create_time_entry` | Log time entry |
-| `redmine_search` | Full-text search |
-
-### Examples
-
-```
+```bash
 # Get all open issues
 redmine_get_issues(status_id: "open")
-
-# Get issues for a specific project
-redmine_get_issues(project_id: "my-project")
-
-# Get single issue details
-redmine_get_issue(id: 12345)
 
 # Get issues assigned to me
 redmine_get_issues(assigned_to_id: "me")
 
-# Exclude specific user
-redmine_get_issues(assigned_to_id: "!42")
+# Get single issue with history
+redmine_get_issue(id: 12345)
 
 # Add a note to an issue
 redmine_update_issue(id: 12345, notes: "Task completed")
 
-# Log 2 hours on an issue
+# Log time on an issue
 redmine_create_time_entry(issue_id: 12345, hours: 2, comments: "Bug fix")
+
+# Full-text search
+redmine_search(q: "authentication", scope: "issues")
+
+# Open Log Viewer in browser
+redmine_log_viewer(open: true)
+```
+
+## Log Viewer
+
+The built-in Log Viewer provides real-time monitoring of MCP requests:
+
+- **Real-time updates** via WebSocket
+- **Filter by level** (DEBUG/INFO/WARN/ERROR)
+- **Filter by tool** name
+- **JSON viewer** for request/response data
+- **Auto-redaction** of sensitive data (API tokens)
+
+Access at `http://localhost:3456` when the server is running.
+
+## Building from Source
+
+### Prerequisites
+
+- Rust 1.75+ (with `cargo`)
+- For cross-compilation: `cargo-zigbuild`
+
+### Build
+
+```bash
+cd rust
+
+# Debug build
+cargo build
+
+# Release build
+cargo build --release
+
+# Cross-compile for multiple platforms
+./build-release.sh
+```
+
+## Testing
+
+A Docker Compose file is provided for local testing:
+
+```bash
+cd rust/test
+docker-compose up -d
+
+# Access Redmine at http://localhost:3000
+# Default login: admin / admin
+
+# Enable API: Administration → Settings → API → Enable REST web service
 ```
 
 ## Security Notes
 
 - `.mcp.json` and `opencode.json` contain your API token
 - **Do not commit these files to version control**
-- Use example files as templates (they contain no real tokens)
-
-## Testing
-
-A Docker Compose file is provided to quickly spin up a local Redmine instance for testing.
-
-```bash
-# Start Redmine + MySQL
-docker-compose -f docker-compose.test.yml up -d
-
-# Wait for Redmine to be ready (first boot may take 1-2 minutes)
-# Then access http://localhost:3000
-# Default admin login: admin / admin
-```
-
-After first login, enable API access:
-1. Go to **Administration** → **Settings** → **API**
-2. Check **Enable REST web service**
-3. Create an API token from **My account** page
-
-```bash
-# Stop and remove containers
-docker-compose -f docker-compose.test.yml down
-
-# Stop and remove containers + data
-docker-compose -f docker-compose.test.yml down -v
-```
+- The Log Viewer automatically redacts API tokens in logs
 
 ## License
 

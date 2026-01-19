@@ -1,7 +1,7 @@
 {
   "name": "redmine-mcp",
   "version": "1.0.0",
-  "description": "Redmine MCP Server with 34 API tools for issue tracking, time logging, wiki management, and more",
+  "description": "Redmine MCP Server with 35 API tools for issue tracking, time logging, wiki management, and more",
   "author": {
     "name": "soane"
   },
@@ -20,11 +20,20 @@
   "mcpServers": {
     "redmine": {
       "command": "bun",
-      "args": ["run", "${pluginDir}/src/index.ts"],
+      "args": ["run", "${pluginDir}/node/src/index.ts"],
       "env": {
         "REDMINE_URL": "${env:REDMINE_URL}",
         "REDMINE_TOKEN": "${env:REDMINE_TOKEN}",
         "LOG_LEVEL": "${env:LOG_LEVEL:info}"
+      }
+    },
+    "redmine-rust": {
+      "command": "${pluginDir}/rust/target/release/redmine-mcp",
+      "env": {
+        "REDMINE_URL": "${env:REDMINE_URL}",
+        "REDMINE_TOKEN": "${env:REDMINE_TOKEN}",
+        "LOG_LEVEL": "${env:LOG_LEVEL:info}",
+        "LOG_VIEWER": "${env:LOG_VIEWER:true}"
       }
     }
   },
@@ -54,6 +63,12 @@
         "description": "Logging level (debug/info/warn/error)",
         "type": "string",
         "default": "info"
+      },
+      {
+        "name": "LOG_VIEWER",
+        "description": "Enable Log Viewer web UI (Rust only)",
+        "type": "boolean",
+        "default": true
       }
     ]
   }

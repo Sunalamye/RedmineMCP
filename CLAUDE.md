@@ -1,57 +1,65 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code when working with this repository.
 
 ## Project Overview
 
-MCP Server for Redmine integration. Provides 34 API tools for Claude Code and OpenCode.
+Redmine MCP Server - High-performance Rust implementation with 35 API tools.
 
 ## Commands
 
 ```bash
-bun run start      # Run MCP server
-bun run dev        # Watch mode
-bun run build      # Build to dist/
-bun run typecheck  # Type check
+cd rust
+cargo build --release    # Build release binary
+cargo run               # Run MCP server
+./build-release.sh      # Cross-compile for multiple platforms
 ```
 
 ## Architecture
 
 ```
-src/
-├── index.ts           # Entry point, MCP server setup
-├── logger.ts          # Singleton logger (file + console)
-├── redmine-client.ts  # Redmine API client (all HTTP calls)
+rust/src/
+├── main.rs            # Entry point, JSON-RPC loop
+├── lib.rs             # Library exports
+├── config.rs          # Configuration (env vars)
+├── error.rs           # Error types (thiserror)
+├── client/
+│   ├── mod.rs         # Redmine API client (async reqwest)
+│   └── types.rs       # API response types (serde)
+├── log_viewer/
+│   ├── mod.rs         # HTTP/WebSocket server (axum)
+│   └── ui.rs          # HTML/CSS/JS for web UI
 └── tools/
-    ├── definitions.ts # Tool schemas (inputSchema for each tool)
-    └── handlers.ts    # Tool handlers (switch on tool name)
+    ├── mod.rs         # MCP tool implementations
+    └── params.rs      # Tool definitions (JSON Schema)
 ```
 
-**Data flow:** MCP request → `handlers.ts` → `RedmineClient` method → Redmine API → JSON response
+**Data flow:** stdin → JSON-RPC parse → `tools/mod.rs` match → `RedmineClient` async → Redmine API → JSON response → stdout
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `REDMINE_URL` | Yes | Redmine base URL |
-| `REDMINE_TOKEN` | Yes | API token |
-| `LOG_FILE` | No | Log file path (default: `/tmp/redmine-mcp.log`) |
-| `LOG_LEVEL` | No | debug/info/warn/error (default: info) |
-| `LOG_VIEWER` | No | Enable web log viewer (default: true) |
-| `LOG_VIEWER_PORT` | No | Log viewer port (default: 3456) |
-| `LOG_VIEWER_OPEN` | No | Auto open browser (default: true) |
-| `LOG_VIEWER_HISTORY` | No | Max log entries to keep (default: 500) |
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `REDMINE_URL` | Yes | - | Redmine base URL |
+| `REDMINE_TOKEN` | Yes | - | API token |
+| `LOG_LEVEL` | No | `info` | debug/info/warn/error |
+| `LOG_VIEWER` | No | `true` | Enable Log Viewer |
+| `LOG_VIEWER_PORT` | No | `3456` | Log Viewer port |
+| `LOG_VIEWER_OPEN` | No | `true` | Auto open browser |
 
-### Log Levels
+## Key MCP Tools (35 total)
 
-| Level | Records |
-|-------|---------|
-| `error` | Errors only |
-| `warn` | Warnings + errors |
-| `info` | Request/response summary + warnings + errors |
-| `debug` | **Full details**: HTTP requests, response bodies, all data (with sensitive redaction) |
-
-**Tip:** Use `LOG_LEVEL=debug` for troubleshooting to see complete HTTP traffic.
+| Category | Tools |
+|----------|-------|
+| Issues | `redmine_get_issues`, `redmine_get_issue`, `redmine_update_issue`, `redmine_get_journals` |
+| Time | `redmine_get_time_entries`, `redmine_create_time_entry`, `redmine_get_time_entry_activities` |
+| Projects | `redmine_get_projects`, `redmine_get_project_members` |
+| Users | `redmine_get_current_user`, `redmine_get_users`, `redmine_get_user` |
+| Wiki | `redmine_get_wiki_pages`, `redmine_get_wiki_page`, `redmine_update_wiki_page` |
+| Files | `redmine_get_files`, `redmine_get_attachment`, `redmine_upload`, `redmine_download` |
+| Search | `redmine_search` |
+| Generic | `redmine_request` (custom API calls) |
+| Utilities | `redmine_log_viewer` |
 
 ## Custom Commands
 
@@ -59,22 +67,13 @@ src/
 
 Parses Redmine web URL and executes corresponding API call.
 
-**URL Parameter Mapping:**
-
-| Web UI | API |
-|--------|-----|
+| Web UI Parameter | API Parameter |
+|-----------------|---------------|
 | `op[status_id]=o` | `status_id: "open"` |
 | `op[status_id]=c` | `status_id: "closed"` |
 | `v[tracker_id][]=20` | `tracker_id: 20` |
 | `op[assigned_to_id]=!` & `v[]=42` | `assigned_to_id: "!42"` |
 
-## Key MCP Tools
+## Skill Reference
 
-- `redmine_get_issues` - List issues with filters (project_id, status_id, assigned_to_id, tracker_id)
-- `redmine_get_issue` - Single issue with journals and attachments
-- `redmine_update_issue` - Add notes, change status/assignee
-- `redmine_create_time_entry` - Log time entries
-- `redmine_search` - Full-text search across issues/wiki/news
-- `redmine_upload` / `redmine_download` - File operations
-
-Full API reference: `.claude/skills/redmine/references/api-reference.md`
+Full API documentation: `skills/redmine/references/api-reference.md`

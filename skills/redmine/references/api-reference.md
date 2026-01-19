@@ -1,6 +1,6 @@
 # Redmine MCP API Reference
 
-Complete API tool list, 34 tools total.
+Complete API tool list, **35 tools** total (Rust implementation).
 
 ## Issues
 
@@ -139,6 +139,56 @@ Complete API tool list, 34 tools total.
 
 ---
 
+## Generic API
+
+| Tool | Description | Required Params |
+|------|-------------|-----------------|
+| `redmine_request` | Generic API call | `path` |
+
+### redmine_request Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `path` | API path (required), e.g. `/issues.json` |
+| `method` | HTTP method: get/post/put/delete |
+| `data` | Request body (for POST/PUT) |
+| `params` | Query parameters |
+
+See `advanced-api.md` for detailed examples.
+
+---
+
+## Log Viewer
+
+| Tool | Description | Required Params |
+|------|-------------|-----------------|
+| `redmine_log_viewer` | Get Log Viewer URL | - |
+
+### redmine_log_viewer Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `open` | Open browser (default: false) |
+
+### Response
+
+```json
+{
+  "url": "http://localhost:3456",
+  "opened": true
+}
+```
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `LOG_VIEWER` | `true` | Enable/disable Log Viewer |
+| `LOG_VIEWER_PORT` | `3456` | Server port |
+| `LOG_VIEWER_OPEN` | `true` | Auto open browser on startup |
+
+---
+
 ## Others
 
 | Tool | Description | Required Params |
@@ -151,4 +201,22 @@ Complete API tool list, 34 tools total.
 | `redmine_get_roles` | Roles list | - |
 | `redmine_get_groups` | Groups list | - |
 | `redmine_get_news` | News list | - |
-| `redmine_log_viewer` | View MCP server logs | - |
+
+---
+
+## Tool Count Summary
+
+| Category | Count |
+|----------|-------|
+| Issues | 4 |
+| Time Entries | 3 |
+| Versions | 2 |
+| Issue Relations | 3 |
+| Wiki | 3 |
+| Projects & Users | 5 |
+| Files & Attachments | 4 |
+| Search | 1 |
+| Generic API | 1 |
+| Log Viewer | 1 |
+| Others | 8 |
+| **Total** | **35** |

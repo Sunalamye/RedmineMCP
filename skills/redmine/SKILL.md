@@ -1,7 +1,7 @@
 ---
 name: redmine
-version: 1.0.0
-description: Redmine integration skill - URL parsing, issue query and management
+version: 2.0.0
+description: Redmine integration skill - URL parsing, issue query and management (Rust implementation)
 allowed-tools:
   # Issues
   - mcp__redmine__redmine_get_issue
@@ -43,6 +43,8 @@ allowed-tools:
   - mcp__redmine__redmine_download
   # Search
   - mcp__redmine__redmine_search
+  # Generic API
+  - mcp__redmine__redmine_request
   # Log Viewer
   - mcp__redmine__redmine_log_viewer
   # Others
@@ -54,9 +56,9 @@ allowed-tools:
 
 # Redmine Skill
 
-Redmine integration skill with 34 APIs, supporting URL parsing and natural language queries.
+Redmine integration skill with **35 tools**, supporting URL parsing and natural language queries.
 
-> **This skill is the documentation source for all Redmine MCP tools.**
+> **Rust implementation** - High performance MCP server with Log Viewer.
 
 ## Quick Commands
 
@@ -69,6 +71,7 @@ Redmine integration skill with 34 APIs, supporting URL parsing and natural langu
 | log time | `redmine_create_time_entry({ hours: N, ... })` |
 | search "keyword" | `redmine_search({ q: "keyword" })` |
 | download attachment | `redmine_download({ attachment_id: N, save_path: "/path" })` |
+| open log viewer | `redmine_log_viewer({ open: true })` |
 
 ## URL Parsing
 
@@ -79,12 +82,6 @@ Detect Redmine URL type and automatically call corresponding API:
 /projects/{pid}/issues    → redmine_get_issues(project_id)
 /projects/{pid}/issues?...→ redmine_get_issues + parse filters
 ```
-
-### Execution Flow
-
-1. Run `bun run {baseDir}/scripts/parse-url.ts "<url>"`
-2. Determine which API to call based on `type`
-3. Call MCP API and format results
 
 ### Filter Mapping
 
@@ -171,6 +168,30 @@ Create issue relation.
 
 **Relation types:** `relates`, `duplicates`, `blocks`, `blocked`, `precedes`, `follows`, `copied_to`, `copied_from`
 
+### redmine_request
+
+Generic API for custom Redmine API calls.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `path` | string | ✓ | API path, e.g. `/issues.json` |
+| `method` | string | | HTTP method: get/post/put/delete |
+| `data` | object | | Request body (POST/PUT) |
+| `params` | object | | Query parameters |
+
+### redmine_log_viewer
+
+Get Log Viewer URL or open in browser.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `open` | boolean | | Open browser (default: false) |
+
+**Response:**
+```json
+{ "url": "http://localhost:3456", "opened": true }
+```
+
 ## Output Format
 
 ### Single Issue
@@ -192,18 +213,35 @@ Create issue relation.
 |----|---------|--------|----------|---------|
 ```
 
+## Log Viewer
+
+Real-time log viewer with WebSocket support.
+
+**Environment Variables:**
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `LOG_VIEWER` | `true` | Enable/disable |
+| `LOG_VIEWER_PORT` | `3456` | Server port |
+| `LOG_VIEWER_OPEN` | `true` | Auto open browser |
+
+**Features:**
+- Real-time log streaming via WebSocket
+- Log level filtering (DEBUG/INFO/WARN/ERROR)
+- Tool-based filtering
+- JSON request/response viewing
+- Auto-redact sensitive data (API tokens)
+
 ## Resource Index
 
 | Resource | Purpose | Load When |
 |----------|---------|-----------|
-| `{baseDir}/references/api-reference.md` | Full 34 API parameter docs | Need advanced params |
+| `{baseDir}/references/api-reference.md` | Full 35 API parameter docs | Need advanced params |
 | `{baseDir}/references/file-operations.md` | File upload/download | Handle attachments |
 | `{baseDir}/references/advanced-api.md` | redmine_request usage | Use generic API |
 | `{baseDir}/references/textile-syntax.md` | Textile markup syntax | Write formatted content |
 | `{baseDir}/references/examples.md` | Usage examples | Learn usage |
 | `{baseDir}/references/operators.md` | URL filter mapping | Parse URL params |
-| `{baseDir}/scripts/parse-url.ts` | URL parsing script | Auto-parse URLs |
 
 ---
 
-**Redmine Skill v1.0.0**
+**Redmine Skill v2.0.0** - Rust Implementation

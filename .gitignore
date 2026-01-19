@@ -3,6 +3,11 @@ node_modules/
 
 # Build output
 dist/
+rust/target/
+rust/release/
+
+# TypeScript version (use Rust)
+node/
 
 # Logs
 *.log
@@ -31,3 +36,6 @@ opencode.json
 
 # Test files with hardcoded credentials
 test-full.ts
+
+# Claude Code settings and skills
+.claude/

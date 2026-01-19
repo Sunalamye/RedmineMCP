@@ -1,12 +1,12 @@
 {
   "mcpServers": {
     "redmine": {
-      "command": "bun",
-      "args": ["run", "./src/index.ts"],
+      "command": "./rust/target/release/redmine-mcp",
       "env": {
         "REDMINE_URL": "https://your-redmine.example.com",
         "REDMINE_TOKEN": "your-api-token-here",
-        "LOG_LEVEL": "info"
+        "LOG_LEVEL": "info",
+        "LOG_VIEWER": "true"
       }
     }
   }
