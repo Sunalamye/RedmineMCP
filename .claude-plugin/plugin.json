@@ -1,75 +1,22 @@
 {
   "name": "redmine-mcp",
   "version": "1.0.0",
-  "description": "Redmine MCP Server with 35 API tools for issue tracking, time logging, wiki management, and more",
+  "description": "Redmine MCP Server with 35 API tools for issue tracking, time logging, wiki management, and file operations",
   "author": {
-    "name": "soane"
+    "name": "Sunalamye"
   },
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/soane/redmine-mcp"
-  },
+  "repository": "https://github.com/Sunalamye/RedmineMCP",
+  "homepage": "https://github.com/Sunalamye/RedmineMCP",
   "keywords": [
     "redmine",
     "mcp",
     "issue-tracking",
     "project-management",
+    "time-tracking",
+    "wiki",
     "claude-code"
   ],
-  "mcpServers": {
-    "redmine": {
-      "command": "bun",
-      "args": ["run", "${pluginDir}/node/src/index.ts"],
-      "env": {
-        "REDMINE_URL": "${env:REDMINE_URL}",
-        "REDMINE_TOKEN": "${env:REDMINE_TOKEN}",
-        "LOG_LEVEL": "${env:LOG_LEVEL:info}"
-      }
-    },
-    "redmine-rust": {
-      "command": "${pluginDir}/rust/target/release/redmine-mcp",
-      "env": {
-        "REDMINE_URL": "${env:REDMINE_URL}",
-        "REDMINE_TOKEN": "${env:REDMINE_TOKEN}",
-        "LOG_LEVEL": "${env:LOG_LEVEL:info}",
-        "LOG_VIEWER": "${env:LOG_VIEWER:true}"
-      }
-    }
-  },
-  "skills": [
-    {
-      "path": "skills/redmine",
-      "name": "redmine",
-      "description": "Redmine integration skill - URL parsing, issue query and management"
-    }
-  ],
-  "configuration": {
-    "required": [
-      {
-        "name": "REDMINE_URL",
-        "description": "Your Redmine instance URL (e.g., https://redmine.example.com)",
-        "type": "string"
-      },
-      {
-        "name": "REDMINE_TOKEN",
-        "description": "Your Redmine API token (found in My account > API access key)",
-        "type": "secret"
-      }
-    ],
-    "optional": [
-      {
-        "name": "LOG_LEVEL",
-        "description": "Logging level (debug/info/warn/error)",
-        "type": "string",
-        "default": "info"
-      },
-      {
-        "name": "LOG_VIEWER",
-        "description": "Enable Log Viewer web UI (Rust only)",
-        "type": "boolean",
-        "default": true
-      }
-    ]
-  }
+  "skills": ["./skills/redmine"],
+  "mcpServers": "./.mcp.json"
 }

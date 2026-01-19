@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "redmine": {
+      "type": "stdio",
+      "command": "${CLAUDE_PLUGIN_ROOT}/scripts/run-mcp.sh",
+      "env": {
+        "REDMINE_URL": "${REDMINE_URL}",
+        "REDMINE_TOKEN": "${REDMINE_TOKEN}",
+        "LOG_LEVEL": "${LOG_LEVEL:-info}",
+        "LOG_VIEWER": "${LOG_VIEWER:-true}"
+      }
+    }
+  }
+}

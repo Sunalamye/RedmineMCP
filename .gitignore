@@ -5,6 +5,7 @@ node_modules/
 dist/
 rust/target/
 rust/release/
+bin/
 
 # TypeScript version (use Rust)
 node/
@@ -27,8 +28,8 @@ Thumbs.db
 .env
 .env.local
 
-# MCP Config (contains API tokens)
-.mcp.json
+# MCP Config with API tokens (use .mcp.local.json for local overrides)
+.mcp.local.json
 opencode.json
 
 # Bun

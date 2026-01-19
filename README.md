@@ -22,9 +22,28 @@ MCP Server for Redmine integration. A high-performance Rust implementation with 
 | Generic | request (custom API calls) |
 | Utilities | log_viewer |
 
-## Download
+## Installation
 
-Pre-built binaries are available from the [Releases](https://github.com/soane/redmine-mcp/releases) page.
+### Option 1: Claude Code Marketplace (Recommended)
+
+Install directly from Claude Code:
+
+```bash
+claude mcp add-from-url https://github.com/Sunalamye/RedmineMCP
+```
+
+Then set your environment variables:
+
+```bash
+export REDMINE_URL="https://your-redmine.example.com"
+export REDMINE_TOKEN="your-api-token-here"
+```
+
+The binary will be automatically downloaded on first use.
+
+### Option 2: Manual Download
+
+Pre-built binaries are available from the [Releases](https://github.com/Sunalamye/RedmineMCP/releases) page.
 
 | Platform | File | Architecture |
 |----------|------|--------------|
@@ -41,7 +60,9 @@ Pre-built binaries are available from the [Releases](https://github.com/soane/re
 3. Find **API access key** on the right sidebar
 4. Click **Show** to reveal your token
 
-### 2. Configure MCP Client
+### 2. Configure MCP Client (Manual Install Only)
+
+If you installed via marketplace, skip this section - MCP is auto-configured.
 
 #### Claude Code
 
