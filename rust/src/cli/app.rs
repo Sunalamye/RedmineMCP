@@ -313,7 +313,8 @@ pub enum WikiAction {
         /// 頁面標題
         title: String,
     },
-    /// 更新 Wiki 頁面
+    /// 更新 Wiki 頁面（格式取決於 Redmine 設定：Textile 或 Markdown）
+    #[command(after_help = "文字格式:\n  內容格式由 Redmine 管理員設定決定（管理 > 設定 > 一般 > 文字格式）\n  常見格式：\n    textile  — h1. 標題、*粗體*、|_. 表頭|\n    markdown — # 標題、**粗體**、| 表頭 |")]
     Update {
         /// 專案 ID
         project_id: String,
