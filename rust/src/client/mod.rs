@@ -320,9 +320,27 @@ impl RedmineClient {
     // ========== Search ==========
 
     /// 全文搜尋
+    ///
+    /// `scope` 會自動轉換為 Redmine 的資源類型參數（issues=1 等）
     pub async fn search(&self, query: &str, params: &SearchParams) -> Result<SearchResponse> {
         let mut full_params = params.clone();
         full_params.q = Some(query.to_string());
+        // 把 scope（如 "issues"）轉為 Redmine 實際的篩選參數
+        if let Some(scope) = &full_params.scope {
+            for s in scope.split(',') {
+                match s.trim() {
+                    "issues" => full_params.issues = Some(1),
+                    "news" => full_params.news = Some(1),
+                    "documents" => full_params.documents = Some(1),
+                    "changesets" => full_params.changesets = Some(1),
+                    "wiki_pages" | "wiki" => full_params.wiki_pages = Some(1),
+                    "messages" => full_params.messages = Some(1),
+                    "projects" => full_params.projects = Some(1),
+                    _ => {} // 忽略不認識的 scope
+                }
+            }
+            full_params.scope = None;
+        }
         self.get_with_query("/search.json", &full_params).await
     }
 
@@ -479,7 +497,16 @@ impl RedmineClient {
 
     async fn handle_response<T: DeserializeOwned>(response: Response) -> Result<T> {
         if response.status().is_success() {
-            Ok(response.json().await?)
+            let text = response.text().await?;
+            serde_json::from_str(&text).map_err(|e| {
+                let preview = if text.len() > 200 {
+                    format!("{}...", &text[..200])
+                } else {
+                    text.clone()
+                };
+                debug!("JSON 反序列化失敗: {} | 回應: {}", e, preview);
+                RedmineError::Json(e)
+            })
         } else {
             Err(RedmineError::from_response(response).await)
         }

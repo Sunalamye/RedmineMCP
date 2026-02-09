@@ -308,13 +308,13 @@ pub fn get_tool_definitions() -> Vec<Value> {
         // Search
         json!({
             "name": "redmine_search",
-            "description": "全文搜尋",
+            "description": "全文搜尋。scope 可篩選資源類型：issues, news, wiki_pages, documents, changesets, messages, projects（可逗號分隔多個）",
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "q": { "type": "string" },
-                    "scope": { "type": "string" },
-                    "project_id": { "type": "string" },
+                    "q": { "type": "string", "description": "搜尋關鍵字" },
+                    "scope": { "type": "string", "description": "資源類型篩選，如 issues, wiki_pages, news（可逗號分隔）" },
+                    "project_id": { "type": "string", "description": "限定專案" },
                     "limit": { "type": "number" },
                     "offset": { "type": "number" }
                 },

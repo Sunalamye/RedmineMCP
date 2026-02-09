@@ -36,6 +36,7 @@ pub struct Issue {
     pub subject: String,
     #[serde(default)]
     pub description: Option<String>,
+    #[serde(default)]
     pub done_ratio: u8,
     pub created_on: String,
     pub updated_on: String,
@@ -315,7 +316,8 @@ pub struct ProjectFile {
     pub id: u64,
     pub filename: String,
     pub filesize: u64,
-    pub content_type: String,
+    #[serde(default)]
+    pub content_type: Option<String>,
     #[serde(default)]
     pub description: Option<String>,
     pub content_url: String,
@@ -328,7 +330,8 @@ pub struct Attachment {
     pub id: u64,
     pub filename: String,
     pub filesize: u64,
-    pub content_type: String,
+    #[serde(default)]
+    pub content_type: Option<String>,
     #[serde(default)]
     pub description: Option<String>,
     pub content_url: String,
@@ -353,11 +356,15 @@ pub struct DownloadResult {
 // ========== Search Types ==========
 
 /// 搜尋參數
+///
+/// `scope` 用於篩選資源類型（issues, news, documents, changesets, wiki_pages, messages, projects）
+/// Redmine API 實際使用 `issues=1` 等參數，此處自動轉換
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct SearchParams {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub q: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    /// 資源類型篩選（issues, news, wiki_pages, documents, changesets, messages, projects）
+    #[serde(skip_serializing)]
     pub scope: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub project_id: Option<String>,
@@ -365,6 +372,21 @@ pub struct SearchParams {
     pub limit: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub offset: Option<u64>,
+    // Redmine search 資源類型開關
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub issues: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub news: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub documents: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub changesets: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub wiki_pages: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub messages: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub projects: Option<u8>,
 }
 
 /// 搜尋結果項目
@@ -387,6 +409,7 @@ pub struct SearchResult {
 pub struct IssueStatus {
     pub id: u64,
     pub name: String,
+    #[serde(default)]
     pub is_closed: bool,
 }
 
@@ -395,6 +418,7 @@ pub struct IssueStatus {
 pub struct SavedQuery {
     pub id: u64,
     pub name: String,
+    #[serde(default)]
     pub is_public: bool,
     #[serde(default)]
     pub project_id: Option<u64>,

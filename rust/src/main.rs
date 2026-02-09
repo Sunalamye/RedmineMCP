@@ -1,21 +1,33 @@
-//! Redmine MCP Server
+//! Redmine — MCP Server & CLI
 //!
-//! 環境變數:
-//!   REDMINE_URL      - Redmine 網址 (必填)
-//!   REDMINE_TOKEN    - API Token (必填)
-//!   LOG_FILE         - 日誌檔案路徑 (預設: /tmp/redmine-mcp.log)
-//!   LOG_LEVEL        - 日誌等級: debug, info, warn, error (預設: info)
-//!   LOG_VIEWER       - 啟用 Log Viewer (預設: true)
-//!   LOG_VIEWER_PORT  - Log Viewer 埠號 (預設: 3456)
-//!   LOG_VIEWER_OPEN  - 自動開啟瀏覽器 (預設: true)
+//! 模式切換:
+//!   1. `redmine --mcp`         → MCP server
+//!   2. `REDMINE_MCP=1`         → MCP server
+//!   3. 其他                     → CLI
 
+use clap::Parser;
+use redmine_mcp::cli;
 use redmine_mcp::{Config, RedmineClient, RedmineMcpServer, start_log_viewer, get_log_viewer_url};
 use serde_json::{json, Value};
 use std::io::{self, BufRead, Write};
 use tracing::{debug, error, info};
 
 fn main() -> anyhow::Result<()> {
-    // 初始化日誌 (輸出到 stderr)
+    let cli = cli::Cli::parse();
+
+    let mcp_env = std::env::var("REDMINE_MCP")
+        .map(|v| v == "1")
+        .unwrap_or(false);
+
+    if cli.mcp || mcp_env {
+        run_mcp_server()
+    } else {
+        let rt = tokio::runtime::Runtime::new()?;
+        rt.block_on(cli::run(cli))
+    }
+}
+
+fn run_mcp_server() -> anyhow::Result<()> {
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
         .with_writer(std::io::stderr)
@@ -25,29 +37,19 @@ fn main() -> anyhow::Result<()> {
     info!("=== MCP 伺服器啟動中 ===");
     debug!("工作目錄: {:?}", std::env::current_dir()?);
 
-    // 載入配置
     let config = Config::from_env()?;
     debug!("REDMINE_URL: {}", config.redmine_url);
-    debug!("REDMINE_TOKEN: (已設定)");
 
-    info!("環境變數檢查通過");
-
-    // 建立 Redmine 客戶端
     let client = RedmineClient::new(&config.redmine_url, &config.redmine_token)?;
-
-    // 建立 MCP Server
     let server = RedmineMcpServer::new(client);
 
-    // 使用 tokio runtime 執行
     let rt = tokio::runtime::Runtime::new()?;
 
-    // 啟動 Log Viewer
     rt.block_on(start_log_viewer());
     if let Some(url) = get_log_viewer_url() {
         info!("Log Viewer: {}", url);
     }
 
-    // 測試連線
     info!("測試 Redmine 連線...");
     let login_result = rt.block_on(async {
         server.call_tool("redmine_get_current_user", None).await
@@ -59,7 +61,6 @@ fn main() -> anyhow::Result<()> {
 
     info!("伺服器已就緒，等待請求中");
 
-    // 主迴圈：處理 JSON-RPC 請求
     let stdin = io::stdin();
     let mut stdout = io::stdout();
 
@@ -117,7 +118,6 @@ fn main() -> anyhow::Result<()> {
                 })
             }
             "notifications/initialized" | "initialized" => {
-                // 不需要回應
                 continue;
             }
             "tools/list" => {
